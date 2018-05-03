@@ -172,6 +172,7 @@ import Nat
 import Probability hiding (cond)
 import BMP
 
+
 import Data.List
 import Data.Typeable
 import Data.Ratio
@@ -995,10 +996,12 @@ sumsub (o, (v, d)) ((e, val):t) = if(o == e) then (e, val - v): sumsub (o, (v, d
                                              else if (d == e) then (e, val + v): sumsub (o, (v, d)) t
                                                               else (e, val): sumsub (o, (v, d)) t
 
-ledger = cataBlockchain (either nil (sumsub . allTransactions))
+ledger = undefined --cataBlockchain (either nil (sumsub . allTransactions))
 
 
-isValidMagicNr = undefined
+
+isValidMagicNr = allUnique . (cataBlockchain (either p1 aux)) 
+                 where aux (bc, nums) = (++) (p1(bc)) (nums)
 \end{code}
 
 
