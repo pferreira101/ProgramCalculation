@@ -974,15 +974,30 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Problema 1}
 
 \begin{code}
-inBlockchain = undefined
-outBlockchain = undefined
-recBlockchain = undefined    
-cataBlockchain = undefined     
-anaBlockchain = undefined
-hyloBlockchain = undefined
+inBlockchain = either Bc Bcs
+outBlockchain (Bc b) = i1 b
+outBlockchain (Bcs bs) = i2 bs
 
-allTransactions = undefined
-ledger = undefined
+recBlockchain f = id -|- id >< f
+cataBlockchain g = g . recBlockchain (cataBlockchain g) . outBlockchain
+anaBlockchain g = inBlockchain . recBlockchain (anaBlockchain g) . g
+hyloBlockchain h g = cataBlockchain h . anaBlockchain g
+
+allTransactions = cataBlockchain (either (p2 . p2) aux) 
+                  where aux (bc, trans) = (++) (p2(p2(bc))) (trans)
+
+
+
+
+sumsub :: Transaction -> Ledger -> Ledger
+sumsub (o, (v, d)) [] = [(d, v), (o, -v)]
+sumsub (o, (v, d)) ((e, val):t) = if(o == e) then (e, val - v): sumsub (o, (v, d)) t
+                                             else if (d == e) then (e, val + v): sumsub (o, (v, d)) t
+                                                              else (e, val): sumsub (o, (v, d)) t
+
+ledger = cataBlockchain (either nil (sumsub . allTransactions))
+
+
 isValidMagicNr = undefined
 \end{code}
 

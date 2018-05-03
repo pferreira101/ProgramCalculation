@@ -5,7 +5,7 @@ module BMP where
 import qualified Data.Vector.Storable as V
 import Codec.Picture.Types
 import Codec.Picture
-import Data.Matrix hiding (trace)
+import Data.Matrix 
 import Control.Monad
 
 img2matrix :: Pixel a => Image a -> IO (Matrix a)
