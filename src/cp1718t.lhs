@@ -989,19 +989,35 @@ allTransactions = cataBlockchain (either (p2 . p2) aux)
 
 
 
+sumTo :: Transaction -> Ledger -> Ledger
+sumTo (o, (v, d)) [] = [(d, v)]
+sumTo (o, (v, d)) ((e, val):t) = if (d == e) then (e, val + v):t
+                                             else (e, val):sumTo (o, (v, d)) t
 
-sumsub :: Transaction -> Ledger -> Ledger
-sumsub (o, (v, d)) [] = [(d, v), (o, -v)]
-sumsub (o, (v, d)) ((e, val):t) = if(o == e) then (e, val - v): sumsub (o, (v, d)) t
-                                             else if (d == e) then (e, val + v): sumsub (o, (v, d)) t
-                                                              else (e, val): sumsub (o, (v, d)) t
+subTo :: Transaction -> Ledger -> Ledger
+subTo (o, (v, d)) [] = [(o, -v)]
+subTo (o, (v, d)) ((e, val):t) = if (o == e) then (e, val - v):t
+                                             else (e, val):subTo (o, (v, d)) t 
 
-ledger = undefined --cataBlockchain (either nil (sumsub . allTransactions))
+ledger = cataList (either nil sumsub) . allTransactions
+         where sumsub ((o, (v, d)), ledger) = (sumTo (o, (v, d)) (subTo (o, (v, d)) ledger))
 
 
 
-isValidMagicNr = allUnique . (cataBlockchain (either p1 aux)) 
-                 where aux (bc, nums) = (++) (p1(bc)) (nums)
+allUnique :: Eq a => [a] -> Bool
+allUnique [] = True
+allUnique (h:t) = if elem h t then False
+                              else allUnique t
+
+allMagicNr :: Blockchain -> [[Char]]
+allMagicNr = cataBlockchain (either (singl . p1) aux)
+             where aux (bc, nums) = (++) [(p1(bc))] (nums)
+
+
+isValidMagicNr = allUnique . allMagicNr
+
+
+
 \end{code}
 
 
