@@ -1009,7 +1009,7 @@ allUnique [] = True
 allUnique (h:t) = if elem h t then False
                               else allUnique t
 
-allMagicNr :: Blockchain -> [[Char]]
+allMagicNr :: Blockchain -> [[Char]] -- confrontar com professora
 allMagicNr = cataBlockchain (either (singl . p1) aux)
              where aux (bc, nums) = (++) [(p1(bc))] (nums)
 
@@ -1024,13 +1024,29 @@ isValidMagicNr = allUnique . allMagicNr
 \subsection*{Problema 2}
 
 \begin{code}
-inQTree = undefined
-outQTree = undefined
-baseQTree = undefined
-recQTree = undefined
-cataQTree = undefined
-anaQTree = undefined
-hyloQTree = undefined
+uncurryCell :: (a, (Int, Int)) -> QTree a
+uncurryCell (a, (b, c)) = Cell a b c
+
+curryCell :: QTree a -> (a, (Int, Int))
+curryCell (Cell a b c) = (a, (b, c))
+
+uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
+uncurryBlock (a, (b, (c, d))) = Block a b c d
+
+curryBlock :: QTree a -> (QTree a, (QTree a, (QTree a, QTree a)))
+curryBlock (Block a b c d) = (a, (b, (c, d)))
+
+
+inQTree = either uncurryCell uncurryBlock
+outQTree (Cell a b c) = i1 (((a, (b, c))))
+outQTree (Block a b c d) = i2 ((a, (b, (c, d))))
+
+baseQTree f g = (f >< id) -|- (g >< (g >< (g >< g))) -- ?
+recQTree f = id -|- (f >< (f >< (f >< f))) -- ?
+cataQTree g = g . recQTree (cataQTree g) . outQTree   
+anaQTree g = inQTree . recQTree (anaQTree g) . g
+hyloQTree h g = cataQTree h . anaQTree g
+
 
 instance Functor QTree where
     fmap = undefined

@@ -1304,24 +1304,71 @@ outras funções auxiliares que sejam necessárias.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{19}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{46}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{inBlockchain}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{inBlockchain}\mathrel{=}\alt{\Conid{Bc}}{\Conid{Bcs}}{}\<[E]%
 \\
-\>[B]{}\Varid{outBlockchain}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{outBlockchain}\;(\Conid{Bc}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}{}\<[E]%
 \\
-\>[B]{}\Varid{recBlockchain}\mathrel{=}\bot {}\<[E]%
-\\
-\>[B]{}\Varid{cataBlockchain}\mathrel{=}\bot {}\<[E]%
-\\
-\>[B]{}\Varid{anaBlockchain}\mathrel{=}\bot {}\<[E]%
-\\
-\>[B]{}\Varid{hyloBlockchain}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{outBlockchain}\;(\Conid{Bcs}\;\Varid{bs})\mathrel{=}i_2\;\Varid{bs}{}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{allTransactions}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{recBlockchain}\;\Varid{f}\mathrel{=}\Varid{id}+\Varid{id}\times\Varid{f}{}\<[E]%
 \\
-\>[B]{}\Varid{ledger}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{cataBlockchain}\;\Varid{g}\mathrel{=}\Varid{g}\comp \Varid{recBlockchain}\;(\Varid{cataBlockchain}\;\Varid{g})\comp \Varid{outBlockchain}{}\<[E]%
 \\
-\>[B]{}\Varid{isValidMagicNr}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{anaBlockchain}\;\Varid{g}\mathrel{=}\Varid{inBlockchain}\comp \Varid{recBlockchain}\;(\Varid{anaBlockchain}\;\Varid{g})\comp \Varid{g}{}\<[E]%
+\\
+\>[B]{}\Varid{hyloBlockchain}\;\Varid{h}\;\Varid{g}\mathrel{=}\Varid{cataBlockchain}\;\Varid{h}\comp \Varid{anaBlockchain}\;\Varid{g}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{allTransactions}\mathrel{=}\Varid{cataBlockchain}\;\alt{\p2\comp \p2}{\Varid{aux}}{}\<[E]%
+\\
+\>[B]{}\hsindent{19}{}\<[19]%
+\>[19]{}\mathbf{where}\;\Varid{aux}\;(\Varid{bc},\Varid{trans})\mathrel{=}(\plus )\;(\p2\;(\p2\;(\Varid{bc})))\;(\Varid{trans}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{sumTo}\mathbin{::}\Conid{Transaction}\to \Conid{Ledger}\to \Conid{Ledger}{}\<[E]%
+\\
+\>[B]{}\Varid{sumTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}[\mskip1.5mu (\Varid{d},\Varid{v})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{sumTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;((\Varid{e},\Varid{val})\mathbin{:}\Varid{t})\mathrel{=}\mathbf{if}\;(\Varid{d}\equiv \Varid{e})\;\mathbf{then}\;(\Varid{e},\Varid{val}\mathbin{+}\Varid{v})\mathbin{:}\Varid{t}{}\<[E]%
+\\
+\>[B]{}\hsindent{46}{}\<[46]%
+\>[46]{}\mathbf{else}\;(\Varid{e},\Varid{val})\mathbin{:}\Varid{sumTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;\Varid{t}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{subTo}\mathbin{::}\Conid{Transaction}\to \Conid{Ledger}\to \Conid{Ledger}{}\<[E]%
+\\
+\>[B]{}\Varid{subTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}[\mskip1.5mu (\Varid{o},\mathbin{-}\Varid{v})\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{subTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;((\Varid{e},\Varid{val})\mathbin{:}\Varid{t})\mathrel{=}\mathbf{if}\;(\Varid{o}\equiv \Varid{e})\;\mathbf{then}\;(\Varid{e},\Varid{val}\mathbin{-}\Varid{v})\mathbin{:}\Varid{t}{}\<[E]%
+\\
+\>[B]{}\hsindent{46}{}\<[46]%
+\>[46]{}\mathbf{else}\;(\Varid{e},\Varid{val})\mathbin{:}\Varid{subTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;\Varid{t}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{ledger}\mathrel{=}\Varid{cataList}\;\alt{\Varid{nil}}{\Varid{sumsub}}\comp \Varid{allTransactions}{}\<[E]%
+\\
+\>[B]{}\hsindent{10}{}\<[10]%
+\>[10]{}\mathbf{where}\;\Varid{sumsub}\;((\Varid{o},(\Varid{v},\Varid{d})),\Varid{ledger})\mathrel{=}(\Varid{sumTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;(\Varid{subTo}\;(\Varid{o},(\Varid{v},\Varid{d}))\;\Varid{ledger})){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{allUnique}\mathbin{::}\Conid{Eq}\;\Varid{a}\Rightarrow [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \Conid{Bool}{}\<[E]%
+\\
+\>[B]{}\Varid{allUnique}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Conid{True}{}\<[E]%
+\\
+\>[B]{}\Varid{allUnique}\;(\Varid{h}\mathbin{:}\Varid{t})\mathrel{=}\mathbf{if}\;\Varid{elem}\;\Varid{h}\;\Varid{t}\;\mathbf{then}\;\Conid{False}{}\<[E]%
+\\
+\>[B]{}\hsindent{31}{}\<[31]%
+\>[31]{}\mathbf{else}\;\Varid{allUnique}\;\Varid{t}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{allMagicNr}\mathbin{::}\Conid{Blockchain}\to [\mskip1.5mu [\mskip1.5mu \Conid{Char}\mskip1.5mu]\mskip1.5mu]\mbox{\onelinecomment  confrontar com professora}{}\<[E]%
+\\
+\>[B]{}\Varid{allMagicNr}\mathrel{=}\Varid{cataBlockchain}\;\alt{\Varid{singl}\comp \p1}{\Varid{aux}}{}\<[E]%
+\\
+\>[B]{}\hsindent{14}{}\<[14]%
+\>[14]{}\mathbf{where}\;\Varid{aux}\;(\Varid{bc},\Varid{nums})\mathrel{=}(\plus )\;[\mskip1.5mu (\p1\;(\Varid{bc}))\mskip1.5mu]\;(\Varid{nums}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{isValidMagicNr}\mathrel{=}\Varid{allUnique}\comp \Varid{allMagicNr}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
@@ -1332,19 +1379,37 @@ outras funções auxiliares que sejam necessárias.
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{inQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{uncurryCell}\mathbin{::}(\Varid{a},(\Conid{Int},\Conid{Int}))\to \Conid{QTree}\;\Varid{a}{}\<[E]%
 \\
-\>[B]{}\Varid{outQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{uncurryCell}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{curryCell}\mathbin{::}\Conid{QTree}\;\Varid{a}\to (\Varid{a},(\Conid{Int},\Conid{Int})){}\<[E]%
 \\
-\>[B]{}\Varid{baseQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{curryCell}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}(\Varid{a},(\Varid{b},\Varid{c})){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{uncurryBlock}\mathbin{::}(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},\Conid{QTree}\;\Varid{a})))\to \Conid{QTree}\;\Varid{a}{}\<[E]%
 \\
-\>[B]{}\Varid{recQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{uncurryBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\mathrel{=}\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{curryBlock}\mathbin{::}\Conid{QTree}\;\Varid{a}\to (\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},\Conid{QTree}\;\Varid{a}))){}\<[E]%
 \\
-\>[B]{}\Varid{cataQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{curryBlock}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{inQTree}\mathrel{=}\alt{\Varid{uncurryCell}}{\Varid{uncurryBlock}}{}\<[E]%
 \\
-\>[B]{}\Varid{anaQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{outQTree}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_1\;(((\Varid{a},(\Varid{b},\Varid{c})))){}\<[E]%
 \\
-\>[B]{}\Varid{hyloQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{outQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}i_2\;((\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{baseQTree}\;\Varid{f}\;\Varid{g}\mathrel{=}(\Varid{f}\times\Varid{id})+(\Varid{g}\times(\Varid{g}\times(\Varid{g}\times\Varid{g})))\mbox{\onelinecomment  ?}{}\<[E]%
+\\
+\>[B]{}\Varid{recQTree}\;\Varid{f}\mathrel{=}\Varid{id}+(\Varid{f}\times(\Varid{f}\times(\Varid{f}\times\Varid{f})))\mbox{\onelinecomment  ?}{}\<[E]%
+\\
+\>[B]{}\Varid{cataQTree}\;\Varid{g}\mathrel{=}\Varid{g}\comp \Varid{recQTree}\;(\Varid{cataQTree}\;\Varid{g})\comp \Varid{outQTree}{}\<[E]%
+\\
+\>[B]{}\Varid{anaQTree}\;\Varid{g}\mathrel{=}\Varid{inQTree}\comp \Varid{recQTree}\;(\Varid{anaQTree}\;\Varid{g})\comp \Varid{g}{}\<[E]%
+\\
+\>[B]{}\Varid{hyloQTree}\;\Varid{h}\;\Varid{g}\mathrel{=}\Varid{cataQTree}\;\Varid{h}\comp \Varid{anaQTree}\;\Varid{g}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\mathbf{instance}\;\Conid{Functor}\;\Conid{QTree}\;\mathbf{where}{}\<[E]%
 \\
