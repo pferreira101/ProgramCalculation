@@ -1027,14 +1027,14 @@ isValidMagicNr = allUnique . allMagicNr
 uncurryCell :: (a, (Int, Int)) -> QTree a
 uncurryCell (a, (b, c)) = Cell a b c
 
-curryCell :: QTree a -> (a, (Int, Int))
-curryCell (Cell a b c) = (a, (b, c))
+--curryCell :: QTree a -> (a, (Int, Int))
+--curryCell (Cell a b c) = (a, (b, c))
 
 uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
 uncurryBlock (a, (b, (c, d))) = Block a b c d
 
-curryBlock :: QTree a -> (QTree a, (QTree a, (QTree a, QTree a)))
-curryBlock (Block a b c d) = (a, (b, (c, d)))
+--curryBlock :: QTree a -> (QTree a, (QTree a, (QTree a, QTree a)))
+--curryBlock (Block a b c d) = (a, (b, (c, d)))
 
 
 inQTree = either uncurryCell uncurryBlock
@@ -1051,9 +1051,30 @@ hyloQTree h g = cataQTree h . anaQTree g
 instance Functor QTree where
     fmap = undefined
 
-rotateQTree = undefined
-scaleQTree = undefined
-invertQTree = undefined
+
+rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
+rotateCell (a, (b, c)) = (a, (c, b))
+
+rotateBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> (QTree a, (QTree a, (QTree a, QTree a)))
+rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
+
+rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
+
+
+
+scaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
+scaleCell x (a, (b, c)) = (a, (b*x, c*x))
+
+scaleQTree x = cataQTree (inQTree . ((scaleCell x) -|- id))
+
+
+
+invertCell :: (PixelRGBA8, (Int, Int)) -> (PixelRGBA8, (Int, Int))
+invertCell ((PixelRGBA8 r g b a), (x, y)) = ((PixelRGBA8 (255-r) (255-g) (255-b) a), (x, y))
+
+invertQTree = cataQTree (inQTree . (invertCell -|- id))
+
+
 compressQTree = undefined
 outlineQTree = undefined
 \end{code}
@@ -1068,13 +1089,24 @@ loop = undefined
 \subsection*{Problema 4}
 
 \begin{code}
-inFTree = undefined
-outFTree = undefined
-baseFTree = undefined
-recFTree = undefined
-cataFTree = undefined
-anaFTree = undefined
-hyloFTree = undefined
+
+inUnit :: b -> FTree a b
+inUnit b = Unit b
+
+inComp :: (a, (FTree a b, FTree a b)) -> FTree a b
+inComp (a, (b, c)) = Comp a b c
+
+
+inFTree = either inUnit inComp
+outFTree (Unit b) = i1 (b)
+outFTree (Comp a b c) = i2 ((a, (b, c)))
+
+baseFTree f g h = g -|- (f >< (h >< h))
+recFTree f = id -|- (id >< (f >< f))
+cataFTree g = g . recFTree (cataFTree g) . outFTree
+anaFTree g = inFTree . recFTree (anaFTree g) . g
+hyloFTree h g = cataFTree h . anaFTree g
+
 
 instance Bifunctor FTree where
     bimap = undefined
