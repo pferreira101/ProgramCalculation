@@ -1009,7 +1009,7 @@ allUnique [] = True
 allUnique (h:t) = if elem h t then False
                               else allUnique t
 
-allMagicNr :: Blockchain -> [[Char]] -- confrontar com professora
+allMagicNr :: Blockchain -> [[Char]]
 allMagicNr = cataBlockchain (either (singl . p1) aux)
              where aux (bc, nums) = (++) [(p1(bc))] (nums)
 
@@ -1041,15 +1041,15 @@ inQTree = either uncurryCell uncurryBlock
 outQTree (Cell a b c) = i1 (((a, (b, c))))
 outQTree (Block a b c d) = i2 ((a, (b, (c, d))))
 
-baseQTree f g = (f >< id) -|- (g >< (g >< (g >< g))) -- ?
-recQTree f = id -|- (f >< (f >< (f >< f))) -- ?
+baseQTree f g = (f >< id) -|- (g >< (g >< (g >< g)))
+recQTree f = id -|- (f >< (f >< (f >< f)))
 cataQTree g = g . recQTree (cataQTree g) . outQTree   
 anaQTree g = inQTree . recQTree (anaQTree g) . g
 hyloQTree h g = cataQTree h . anaQTree g
 
 
 instance Functor QTree where
-    fmap = undefined
+    fmap f = cataQTree (inQTree . ((f >< (id >< id)) -|- id))
 
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
@@ -1061,12 +1061,10 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 
 
-
 scaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
 scaleCell x (a, (b, c)) = (a, (b*x, c*x))
 
 scaleQTree x = cataQTree (inQTree . ((scaleCell x) -|- id))
-
 
 
 invertCell :: (PixelRGBA8, (Int, Int)) -> (PixelRGBA8, (Int, Int))
@@ -1075,7 +1073,19 @@ invertCell ((PixelRGBA8 r g b a), (x, y)) = ((PixelRGBA8 (255-r) (255-g) (255-b)
 invertQTree = cataQTree (inQTree . (invertCell -|- id))
 
 
-compressQTree = undefined
+downscaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
+downscaleCell s (a, (b, c)) = (a, (x, y))
+                            where x = if (div b s == 0) then 1 else div b s
+                                  y = if (div c s == 0) then 1 else div c s 
+
+compressQTree x = cataQTree (inQTree . ((downscaleCell x) -|- id))-- não funciona para n>1 apesar de passar na quickCheck, acessa a posicoes que nao existem da matriz nao sei pq
+
+
+
+isBackground :: (PixelRGBA8, (Int, Int)) -> Bool
+isBackground ((PixelRGBA8 255 255 255 255), (x, y)) = True
+isBackground ((PixelRGBA8 r g b a), (x, y)) = False
+
 outlineQTree = undefined
 \end{code}
 
@@ -1109,7 +1119,7 @@ hyloFTree h g = cataFTree h . anaFTree g
 
 
 instance Bifunctor FTree where
-    bimap = undefined
+    bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
 
 generatePTree = undefined
 drawPTree = undefined
