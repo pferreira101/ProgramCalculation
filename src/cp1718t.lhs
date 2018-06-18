@@ -984,9 +984,8 @@ cataBlockchain g = g . recBlockchain (cataBlockchain g) . outBlockchain
 anaBlockchain g = inBlockchain . recBlockchain (anaBlockchain g) . g
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
-allTransactions = cataBlockchain (either (p2 . p2) aux) 
-                  where aux (bc, trans) = (++) (p2(p2(bc))) (trans)
 
+allTransactions = cataBlockchain (either (p2 . p2) (conc . ((p2 . p2) >< id)))
 
 
 sumTo :: Transaction -> Ledger -> Ledger
@@ -999,6 +998,7 @@ subTo (o, (v, d)) [] = [(o, -v)]
 subTo (o, (v, d)) ((e, val):t) = if (o == e) then (e, val - v):t
                                              else (e, val):subTo (o, (v, d)) t 
 
+
 ledger = cataList (either nil sumsub) . allTransactions
          where sumsub ((o, (v, d)), ledger) = (sumTo (o, (v, d)) (subTo (o, (v, d)) ledger))
 
@@ -1010,8 +1010,7 @@ allUnique (h:t) = if elem h t then False
                               else allUnique t
 
 allMagicNr :: Blockchain -> [[Char]]
-allMagicNr = cataBlockchain (either (singl . p1) aux)
-             where aux (bc, nums) = (++) [(p1(bc))] (nums)
+allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
 
 
 isValidMagicNr = allUnique . allMagicNr
@@ -1027,14 +1026,8 @@ isValidMagicNr = allUnique . allMagicNr
 uncurryCell :: (a, (Int, Int)) -> QTree a
 uncurryCell (a, (b, c)) = Cell a b c
 
---curryCell :: QTree a -> (a, (Int, Int))
---curryCell (Cell a b c) = (a, (b, c))
-
 uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
 uncurryBlock (a, (b, (c, d))) = Block a b c d
-
---curryBlock :: QTree a -> (QTree a, (QTree a, (QTree a, QTree a)))
---curryBlock (Block a b c d) = (a, (b, (c, d)))
 
 
 inQTree = either uncurryCell uncurryBlock
@@ -1073,12 +1066,8 @@ invertCell ((PixelRGBA8 r g b a), (x, y)) = ((PixelRGBA8 (255-r) (255-g) (255-b)
 invertQTree = cataQTree (inQTree . (invertCell -|- id))
 
 
-downscaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
-downscaleCell s (a, (b, c)) = (a, (x, y))
-                            where x = if (div b s == 0) then 1 else div b s
-                                  y = if (div c s == 0) then 1 else div c s 
 
-compressQTree x = cataQTree (inQTree . ((downscaleCell x) -|- id))-- não funciona para n>1 apesar de passar na quickCheck, acessa a posicoes que nao existem da matriz nao sei pq
+compressQTree x = undefined
 
 
 
@@ -1159,19 +1148,53 @@ Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tira
 
 Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\ 
 \href{https://ctan.org/pkg/xymatrix}{xymatrix}, por exemplo: 
+
+% DIAGRAMA 1.1
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |Nat0|
-           \ar[d]_-{|cataNat g|}
+    |Blockchain|
+           \ar[d]_-{allTransactions = |cataNat g|}
 &
-    |1 + Nat0|
-           \ar[d]^{|id + (cataNat g)|}
-           \ar[l]_-{|inNat|}
+    |Block + Block * Blockchain|
+          \ar[d]^{|id + id * (cataNat g)|}
+          \ar[l]_-{|in|}
 \\
-     |B|
+     |Transactions|
 &
-     |1 + B|
-           \ar[l]^-{|g|}
+    |Block + Block * Transactions|
+          \ar[l]^-{|g|}
+          \ar[d]^{|g + g * id|}
+\\
+&
+    |Transactions + Transactions * Transactions|
+          \ar[ul]^-{|[id, conc]|}
+}
+\end{eqnarray*}
+
+
+% DIAGRAMA 1.3
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]_-{|cataNat g|}
+           \ar[ddd]_-{|isValidMagicNr|}
+&
+    |Block + Block * Blockchain|
+          \ar[d]^{|id + id * (cataNat g)|}
+          \ar[l]_-{|in|}
+\\
+    |[MagicNr]|
+          \ar[dd]^{|allUnique|}
+&
+    |Block + Block * [MagicNr]|
+          \ar[l]^-{|g|}
+          \ar[d]^{|p1 + p1 * id|}
+\\
+&
+    |MagicNr + MagicNr * [MagicNr]|
+          \ar[ul]^-{|[singl, cons]|}
+\\
+    |Bool|
 }
 \end{eqnarray*}
 
