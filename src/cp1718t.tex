@@ -891,7 +891,7 @@ e
 \\[\blanklineskip]%
 \>[B]{}\Varid{s}\;\mathrm{0}\mathrel{=}\mathrm{1}{}\<[E]%
 \\
-\>[B]{}\Varid{s}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}\Varid{s}\;\Varid{n}\mathbin{+}\mathrm{1}{}\<[E]%
+\>[B]{}\Varid{s}\;(\Varid{d}\mathbin{+}\mathrm{1})\mathrel{=}\Varid{s}\;\Varid{d}\mathbin{+}\mathrm{1}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 A partir daqui alguém derivou a seguinte implementação:
@@ -912,7 +912,7 @@ Verificação que \ensuremath{\Big(\vcenter{\xymatrix@R=1pt{\Varid{n}\\\Varid{k}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{prop3}\;\Varid{n}\;\Varid{k}\mathrel{=}\Big(\vcenter{\xymatrix@R=1pt{\Varid{n}\\\Varid{k}}}\Big)\equiv {\Varid{n}!}\mathbin{/}({\Varid{k}!}\mathbin{*}{(\Varid{n}\mathbin{-}\Varid{k})!}){}\<[E]%
+\>[B]{}\Varid{prop3}\;(\Conid{NonNegative}\;\Varid{n})\;(\Conid{NonNegative}\;\Varid{k})\mathrel{=}\Varid{k}\leq \Varid{n}\Rightarrow\Big(\vcenter{\xymatrix@R=1pt{\Varid{n}\\\Varid{k}}}\Big)\equiv {\Varid{n}!}\mathbin{/}({\Varid{k}!}\mathbin{*}{(\Varid{n}\mathbin{-}\Varid{k})!}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 \end{propriedade}
@@ -1518,6 +1518,31 @@ Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tira
 Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\ 
 \href{https://ctan.org/pkg/xymatrix}{xymatrix}, por exemplo: 
 
+
+
+% OUT - 1
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outBlockchain}\comp \Varid{inBlockchain}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inBlockchain; Reflexão-+}
+%
+  \ensuremath{\Varid{outBlockchain}\comp [\mskip1.5mu \Conid{Bc},\Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outBlockchain}\comp \Conid{Bc},\Varid{outBlockchain}\comp \Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\comp \Conid{Bc}\mathrel{=}i_1\\\Varid{outBlockchain}\comp \Conid{Bcs}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\;(\Conid{Bc}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outBlockchain}\;(\Conid{Bcs}\;\Varid{bs})\mathrel{=}i_2\;\Varid{bs}\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+
 % DIAGRAMA 1.1
 \begin{eqnarray*}
 \xymatrix@C=2cm{
@@ -1546,4 +1571,93 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
 \xymatrix@C=2cm{
     \ensuremath{\Conid{Blockchain}}
            \ar[d]_-{\ensuremath{\cata{\Varid{g}}}}
-           \ar
+           \ar@/_3.0pc/[ddd]_-{\ensuremath{\Varid{isValidMagicNr}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Blockchain}}
+          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\mathbin{*}\cata{\Varid{g}}}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+    \ensuremath{[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[dd]^{\ensuremath{\Varid{allUnique}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[l]^-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{\p1\mathbin{+}\p1\mathbin{*}\Varid{id}}}
+\\
+&
+    \ensuremath{\Conid{MagicNr}\mathbin{+}\Conid{MagicNr}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[ul]^-{\ensuremath{[\mskip1.5mu \Varid{singl},\Varid{cons}\mskip1.5mu]}}
+\\
+    \ensuremath{\Conid{Bool}}
+}
+\end{eqnarray*}
+
+
+% OUT - 2
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outQTree}\comp \Varid{inQTree}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inQTree; Reflexão-+}
+%
+  \ensuremath{\Varid{outQTree}\comp [\mskip1.5mu \Varid{uncurryCell},\Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outQTree}\comp \Varid{uncurryCell},\Varid{outQTree}\comp \Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\comp \Varid{uncurryCell}\mathrel{=}i_1\\\Varid{outQTree}\comp \Varid{uncurryBlock}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Varid{uncurryCell}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c})))\;(\Varid{outQTree}\;(\Varid{uncurryBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))))\\\cdot \end{lcbr}}
+%
+\just\equiv{uncurryCell; uncurryBlock}
+%
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c}))\\\Varid{outQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+
+
+
+ OUT - 4
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outFTree}\comp \Varid{inFTree}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inFTree; Reflexão-+}
+%
+  \ensuremath{\Varid{outFTree}\comp [\mskip1.5mu \Varid{inUnit},\Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outFTree}\comp \Varid{inUnit},\Varid{outFTree}\comp \Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\comp \Varid{inUnit}\mathrel{=}i_1\\\Varid{outFTree}\comp \Varid{inComp}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Varid{inUnit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Varid{inComp}\;(\Varid{a},(\Varid{b},\Varid{c})))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
+%
+\just\equiv{inUnit; inComp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Conid{Unit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Conid{Comp}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+%----------------- Fim do anexo com soluções dos alunos ------------------------%
+
+%----------------- Índice remissivo (exige makeindex) -------------------------%
+
+\printindex
+
+%----------------- Outras definições auxiliares -------------------------------------------%
+
+
+%----------------- Fim do documento -------------------------------------------%
+
+\end{document}
+

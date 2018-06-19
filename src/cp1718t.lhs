@@ -661,7 +661,7 @@ g 0 = 1
 g (d+1) = underbrace ((d+1)) (s d) * g d
 
 s 0 = 1
-s (d+1) = s n + 1
+s (d+1) = s d + 1
 \end{spec}
 A partir daqui alguém derivou a seguinte implementação:
 \begin{code}
@@ -674,7 +674,7 @@ derive as funções |base k| e |loop| que são usadas como auxiliares acima.
 \begin{propriedade}
 Verificação que |bin n k| coincide com a sua especificação (\ref{eq:bin}):
 \begin{code}
-prop3 n k = (bin n k) == (fac n) % (fac k * (fac ((n-k))))
+prop3 (NonNegative n) (NonNegative k) = k <= n ==> (bin n k) == (fac n) % (fac k * (fac ((n-k))))
 \end{code}
 \end{propriedade}
 
@@ -1042,8 +1042,8 @@ hyloQTree h g = cataQTree h . anaQTree g
 
 
 instance Functor QTree where
-    fmap f = cataQTree (inQTree . ((f >< (id >< id)) -|- id))
-
+    fmap f = cataQTree (inQTree . ((f >< id) -|- id))
+                                  -- (f >< (id >< id)) -|- (id >< (id >< (id >< id)))
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
 rotateCell (a, (b, c)) = (a, (c, b))
@@ -1060,10 +1060,10 @@ scaleCell x (a, (b, c)) = (a, (b*x, c*x))
 scaleQTree x = cataQTree (inQTree . ((scaleCell x) -|- id))
 
 
-invertCell :: (PixelRGBA8, (Int, Int)) -> (PixelRGBA8, (Int, Int))
-invertCell ((PixelRGBA8 r g b a), (x, y)) = ((PixelRGBA8 (255-r) (255-g) (255-b) a), (x, y))
+invertColor :: PixelRGBA8 -> PixelRGBA8
+invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
-invertQTree = cataQTree (inQTree . (invertCell -|- id))
+invertQTree = fmap invertColor
 
 
 
@@ -1149,6 +1149,39 @@ Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tira
 Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\ 
 \href{https://ctan.org/pkg/xymatrix}{xymatrix}, por exemplo: 
 
+
+
+% OUT - 1
+\begin{eqnarray*}
+\start
+  |outBlockchain . inBlockchain = id|
+%
+\just\equiv{inBlockchain; Reflexão-+}
+%
+  |outBlockchain . [Bc, Bcs] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outBlockchain . Bc, outBlockchain . Bcs] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outBlockchain . Bc = i1
+  )(
+    outBlockchain . Bcs = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outBlockchain (Bc b) = i1 b
+  )(
+    outBlockchain (Bcs bs) = i2 bs
+  )|
+\qed
+\end{eqnarray*}
+
+
 % DIAGRAMA 1.1
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1177,7 +1210,7 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
 \xymatrix@@C=2cm{
     |Blockchain|
            \ar[d]_-{|cataNat g|}
-           \ar[ddd]_-{|isValidMagicNr|}
+           \ar@@/_3.0pc/[ddd]_-{|isValidMagicNr|}
 &
     |Block + Block * Blockchain|
           \ar[d]^{|id + id * (cataNat g)|}
@@ -1196,6 +1229,86 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
 \\
     |Bool|
 }
+\end{eqnarray*}
+
+
+% OUT - 2
+\begin{eqnarray*}
+\start
+  |outQTree . inQTree = id|
+%
+\just\equiv{inQTree; Reflexão-+}
+%
+  |outQTree . [uncurryCell, uncurryBlock] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outQTree . uncurryCell, outQTree . uncurryBlock] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outQTree . uncurryCell = i1
+  )(
+    outQTree . uncurryBlock = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outQTree (uncurryCell (a, (b, c)) = i1 (a, (b, c))
+  )(
+    outQTree (uncurryBlock (a, (b, (c, d)))) = i2 (a, (b, (c, d)))
+  )|
+%
+\just\equiv{uncurryCell; uncurryBlock}
+%
+        |lcbr(
+    outQTree (Cell a b c) = i1 (a, (b, c))
+  )(
+    outQTree (Block a b c d) = i2 (a, (b, (c, d)))
+  )|
+\qed
+\end{eqnarray*}
+
+
+
+
+% OUT - 4
+\begin{eqnarray*}
+\start
+  |outFTree . inFTree = id|
+%
+\just\equiv{inFTree; Reflexão-+}
+%
+  |outFTree . [inUnit, inComp] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outFTree . inUnit, outFTree . inComp] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outFTree . inUnit = i1
+  )(
+    outFTree . inComp = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outFTree (inUnit b) = i1 b
+  )(
+    outFTree (inComp (a, (b, c))) = i2 (a, (b, c))
+  )|
+%
+\just\equiv{inUnit; inComp}
+%
+        |lcbr(
+    outFTree (Unit b) = i1 b
+  )(
+    outFTree (Comp a b c) = i2 (a, (b, c))
+  )|
+\qed
 \end{eqnarray*}
 
 %----------------- Fim do anexo com soluções dos alunos ------------------------%
@@ -1408,7 +1521,7 @@ invertBMP from to = withBMP from to invertbm
 
 depthQTree :: QTree a -> Int
 depthQTree = cataQTree (either (const 0) f)
-    where f (a,(b,(c,d))) = maximum [a,b,c,d]
+    where f (a,(b,(c,d))) = 1 + maximum [a,b,c,d]
 
 compressbm :: Eq a => Int -> Matrix a -> Matrix a
 compressbm n = qt2bm . compressQTree n . bm2qt
