@@ -975,7 +975,43 @@ outras funções auxiliares que sejam necessárias.
 \subsection*{Problema 1}
 
 \begin{code}
+
 inBlockchain = either Bc Bcs
+
+\end{code}
+
+Dedução outBlockchain:
+\begin{eqnarray*}
+\start
+  |outBlockchain . inBlockchain = id|
+%
+\just\equiv{inBlockchain; Reflexão-+}
+%
+  |outBlockchain . [Bc, Bcs] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outBlockchain . Bc, outBlockchain . Bcs] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outBlockchain . Bc = i1
+  )(
+    outBlockchain . Bcs = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outBlockchain (Bc b) = i1 b
+  )(
+    outBlockchain (Bcs bs) = i2 bs
+  )|
+\qed
+\end{eqnarray*}
+
+\begin{code}
+
 outBlockchain (Bc b) = i1 b
 outBlockchain (Bcs bs) = i2 bs
 
@@ -984,6 +1020,30 @@ cataBlockchain g = g . recBlockchain (cataBlockchain g) . outBlockchain
 anaBlockchain g = inBlockchain . recBlockchain (anaBlockchain g) . g
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]_-{|allTransactions|}^-{|cataNat g|}
+&
+    |Block + Block * Blockchain|
+          \ar[d]^{|id + id * allTransactions|}
+          \ar[l]_-{|in|}
+\\
+     |Transactions|
+&
+    |Block + Block * Transactions|
+          \ar[l]_-{|[p2 . p2, conc . ((p2 . p2) * id)]|}^-{|g|}
+          \ar[d]^{|(p2 . p2) + (p2 . p2) * id|}
+\\
+&
+    |Transactions + Transactions * Transactions|
+          \ar[ul]^-{|[id, conc]|}
+}
+\end{eqnarray*}
+
+\begin{code}
 
 allTransactions = cataBlockchain (either (p2 . p2) (conc . ((p2 . p2) >< id)))
 
@@ -1012,10 +1072,36 @@ allUnique (h:t) = if elem h t then False
 allMagicNr :: Blockchain -> [[Char]]
 allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
 
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Blockchain|
+           \ar[d]^-{|allMagicNr|}_-{|cataNat g|}
+           \ar@@/_3.0pc/[ddd]_-{|isValidMagicNr|}
+&
+    |Block + Block * Blockchain|
+          \ar[d]^{|id + id * allMagicNr|}
+          \ar[l]_-{|in|}
+\\
+    |[MagicNr]|
+          \ar[dd]^{|allUnique|}
+&
+    |Block + Block * [MagicNr]|
+          \ar[l]_-{|[singl . p1, cons . (p1 * id)]|}^-{|g|}
+          \ar[d]^{|p1 + p1 * id|}
+\\
+&
+    |MagicNr + MagicNr * [MagicNr]|
+          \ar[ul]^-{|[singl, cons]|}
+\\
+    |Bool|
+}
+\end{eqnarray*}
+
+\begin{code}
 
 isValidMagicNr = allUnique . allMagicNr
-
-
 
 \end{code}
 
@@ -1031,6 +1117,49 @@ uncurryBlock (a, (b, (c, d))) = Block a b c d
 
 
 inQTree = either uncurryCell uncurryBlock
+
+\end{code}
+
+Dedução outQTree:
+\begin{eqnarray*}
+\start
+  |outQTree . inQTree = id|
+%
+\just\equiv{inQTree; Reflexão-+}
+%
+  |outQTree . [uncurryCell, uncurryBlock] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outQTree . uncurryCell, outQTree . uncurryBlock] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outQTree . uncurryCell = i1
+  )(
+    outQTree . uncurryBlock = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outQTree (uncurryCell (a, (b, c))) = i1 (a, (b, c))
+  )(
+    outQTree (uncurryBlock (a, (b, (c, d)))) = i2 (a, (b, (c, d)))
+  )|
+%
+\just\equiv{uncurryCell; uncurryBlock}
+%
+        |lcbr(
+    outQTree (Cell a b c) = i1 (a, (b, c))
+  )(
+    outQTree (Block a b c d) = i2 (a, (b, (c, d)))
+  )|
+\qed
+\end{eqnarray*}
+
+\begin{code}
+
 outQTree (Cell a b c) = i1 (((a, (b, c))))
 outQTree (Block a b c d) = i2 ((a, (b, (c, d))))
 
@@ -1043,13 +1172,38 @@ hyloQTree h g = cataQTree h . anaQTree g
 
 instance Functor QTree where
     fmap f = cataQTree (inQTree . ((f >< id) -|- id))
-                                  -- (f >< (id >< id)) -|- (id >< (id >< (id >< id)))
+
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
-rotateCell (a, (b, c)) = (a, (c, b))
+rotateCell (a, (x, y)) = (a, (y, x))
 
 rotateBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> (QTree a, (QTree a, (QTree a, QTree a)))
 rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
+
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+           \ar[d]_-{|rotateQTree|}^-{|cataNat g|}
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[d]^{|id + rotateQTree * (rotateQTree * (rotateQTree * rotateQTree))|}
+          \ar[l]_-{|in|}
+\\
+     |QTree A|
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[l]_-{|g|}
+          \ar[d]^{|rotateCell + rotateBlock|}
+\\
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[ul]^-{|in|}
+}
+\end{eqnarray*}
+
+\begin{code}
 
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 
@@ -1057,11 +1211,61 @@ rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 scaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
 scaleCell x (a, (b, c)) = (a, (b*x, c*x))
 
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+           \ar[d]_-{|scaleQTree|}^-{|cataNat g|}
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[d]^{|id + scaleQTree * (scaleQTree * (scaleQTree * scaleQTree))|}
+          \ar[l]_-{|in|}
+\\
+     |QTree A|
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[l]_-{|g|}
+          \ar[d]^{|scaleCell + id|}
+\\
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[ul]^-{|in|}
+}
+\end{eqnarray*}
+
+\begin{code}
+
 scaleQTree x = cataQTree (inQTree . ((scaleCell x) -|- id))
 
 
 invertColor :: PixelRGBA8 -> PixelRGBA8
 invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
+
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree RGB|
+           \ar[d]_-{|invertQTree|}^-{|cataNat g|}
+&
+    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+          \ar[d]_-{|id + invertQTree * (invertQTree * (invertQTree * invertQTree))|}
+          \ar[l]_-{|in|}
+\\
+     |QTree RGB|
+&
+    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+          \ar[l]_-{|g|}
+          \ar[d]^{|invertColor + id|}
+\\
+&
+    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+          \ar[ul]^-{|in|}
+}
+\end{eqnarray*}
+
+\begin{code}
 
 invertQTree = fmap invertColor
 
@@ -1071,11 +1275,9 @@ compressQTree x = undefined
 
 
 
-isBackground :: (PixelRGBA8, (Int, Int)) -> Bool
-isBackground ((PixelRGBA8 255 255 255 255), (x, y)) = True
-isBackground ((PixelRGBA8 r g b a), (x, y)) = False
+outlineQTree f = qt2bm . (fmap f)
 
-outlineQTree = undefined
+
 \end{code}
 
 \subsection*{Problema 3}
@@ -1097,6 +1299,46 @@ inComp (a, (b, c)) = Comp a b c
 
 
 inFTree = either inUnit inComp
+\end{code}
+
+Dedução outFTree:
+\begin{eqnarray*}
+\start
+  |outFTree . inFTree = id|
+%
+\just\equiv{inFTree; Reflexão-+}
+%
+  |outFTree . [inUnit, inComp] = [i1, i2]|
+%
+\just\equiv{Fusão-+}
+%
+  |[outFTree . inUnit, outFTree . inComp] = [i1, i2]|
+%
+\just\equiv{Eq-+}
+        |lcbr(
+    outFTree . inUnit = i1
+  )(
+    outFTree . inComp = i2
+  )|
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        |lcbr(
+    outFTree (inUnit b) = i1 b
+  )(
+    outFTree (inComp (a, (b, c))) = i2 (a, (b, c))
+  )|
+%
+\just\equiv{inUnit; inComp}
+%
+        |lcbr(
+    outFTree (Unit b) = i1 b
+  )(
+    outFTree (Comp a b c) = i2 (a, (b, c))
+  )|
+\qed
+\end{eqnarray*}
+\begin{code}
 outFTree (Unit b) = i1 (b)
 outFTree (Comp a b c) = i2 ((a, (b, c)))
 
@@ -1106,11 +1348,12 @@ cataFTree g = g . recFTree (cataFTree g) . outFTree
 anaFTree g = inFTree . recFTree (anaFTree g) . g
 hyloFTree h g = cataFTree h . anaFTree g
 
-
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
 
-generatePTree = undefined
+
+
+generatePTree = undefined --anaFTree (outFTree . (_ -|- (split (_) (split (id) (id)))))
 drawPTree = undefined
 \end{code}
 
@@ -1151,165 +1394,8 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
 
 
 
-% OUT - 1
-\begin{eqnarray*}
-\start
-  |outBlockchain . inBlockchain = id|
-%
-\just\equiv{inBlockchain; Reflexão-+}
-%
-  |outBlockchain . [Bc, Bcs] = [i1, i2]|
-%
-\just\equiv{Fusão-+}
-%
-  |[outBlockchain . Bc, outBlockchain . Bcs] = [i1, i2]|
-%
-\just\equiv{Eq-+}
-        |lcbr(
-    outBlockchain . Bc = i1
-  )(
-    outBlockchain . Bcs = i2
-  )|
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        |lcbr(
-    outBlockchain (Bc b) = i1 b
-  )(
-    outBlockchain (Bcs bs) = i2 bs
-  )|
-\qed
-\end{eqnarray*}
 
 
-% DIAGRAMA 1.1
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Blockchain|
-           \ar[d]_-{allTransactions = |cataNat g|}
-&
-    |Block + Block * Blockchain|
-          \ar[d]^{|id + id * (cataNat g)|}
-          \ar[l]_-{|in|}
-\\
-     |Transactions|
-&
-    |Block + Block * Transactions|
-          \ar[l]^-{|g|}
-          \ar[d]^{|g + g * id|}
-\\
-&
-    |Transactions + Transactions * Transactions|
-          \ar[ul]^-{|[id, conc]|}
-}
-\end{eqnarray*}
-
-
-% DIAGRAMA 1.3
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Blockchain|
-           \ar[d]_-{|cataNat g|}
-           \ar@@/_3.0pc/[ddd]_-{|isValidMagicNr|}
-&
-    |Block + Block * Blockchain|
-          \ar[d]^{|id + id * (cataNat g)|}
-          \ar[l]_-{|in|}
-\\
-    |[MagicNr]|
-          \ar[dd]^{|allUnique|}
-&
-    |Block + Block * [MagicNr]|
-          \ar[l]^-{|g|}
-          \ar[d]^{|p1 + p1 * id|}
-\\
-&
-    |MagicNr + MagicNr * [MagicNr]|
-          \ar[ul]^-{|[singl, cons]|}
-\\
-    |Bool|
-}
-\end{eqnarray*}
-
-
-% OUT - 2
-\begin{eqnarray*}
-\start
-  |outQTree . inQTree = id|
-%
-\just\equiv{inQTree; Reflexão-+}
-%
-  |outQTree . [uncurryCell, uncurryBlock] = [i1, i2]|
-%
-\just\equiv{Fusão-+}
-%
-  |[outQTree . uncurryCell, outQTree . uncurryBlock] = [i1, i2]|
-%
-\just\equiv{Eq-+}
-        |lcbr(
-    outQTree . uncurryCell = i1
-  )(
-    outQTree . uncurryBlock = i2
-  )|
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        |lcbr(
-    outQTree (uncurryCell (a, (b, c)) = i1 (a, (b, c))
-  )(
-    outQTree (uncurryBlock (a, (b, (c, d)))) = i2 (a, (b, (c, d)))
-  )|
-%
-\just\equiv{uncurryCell; uncurryBlock}
-%
-        |lcbr(
-    outQTree (Cell a b c) = i1 (a, (b, c))
-  )(
-    outQTree (Block a b c d) = i2 (a, (b, (c, d)))
-  )|
-\qed
-\end{eqnarray*}
-
-
-
-
-% OUT - 4
-\begin{eqnarray*}
-\start
-  |outFTree . inFTree = id|
-%
-\just\equiv{inFTree; Reflexão-+}
-%
-  |outFTree . [inUnit, inComp] = [i1, i2]|
-%
-\just\equiv{Fusão-+}
-%
-  |[outFTree . inUnit, outFTree . inComp] = [i1, i2]|
-%
-\just\equiv{Eq-+}
-        |lcbr(
-    outFTree . inUnit = i1
-  )(
-    outFTree . inComp = i2
-  )|
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        |lcbr(
-    outFTree (inUnit b) = i1 b
-  )(
-    outFTree (inComp (a, (b, c))) = i2 (a, (b, c))
-  )|
-%
-\just\equiv{inUnit; inComp}
-%
-        |lcbr(
-    outFTree (Unit b) = i1 b
-  )(
-    outFTree (Comp a b c) = i2 (a, (b, c))
-  )|
-\qed
-\end{eqnarray*}
 
 %----------------- Fim do anexo com soluções dos alunos ------------------------%
 
@@ -1558,8 +1644,8 @@ qtOut = fromLists
 
 bm = fromLists [
     [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
-    [0,0,0,0,1,1,1,0],
+    [0,1,1,0,0,0,0,0],
+    [0,1,1,0,1,1,1,0],
     [0,0,0,0,1,1,0,0],
     [1,1,1,1,1,1,0,0],
     [1,1,1,1,1,1,0,0],
