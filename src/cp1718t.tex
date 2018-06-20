@@ -1304,12 +1304,36 @@ outras funções auxiliares que sejam necessárias.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{46}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{inBlockchain}\mathrel{=}\alt{\Conid{Bc}}{\Conid{Bcs}}{}\<[E]%
-\\
+\ColumnHook
+\end{hscode}\resethooks
+
+Dedução outBlockchain:
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outBlockchain}\comp \Varid{inBlockchain}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inBlockchain; Reflexão-+}
+%
+  \ensuremath{\Varid{outBlockchain}\comp [\mskip1.5mu \Conid{Bc},\Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outBlockchain}\comp \Conid{Bc},\Varid{outBlockchain}\comp \Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\comp \Conid{Bc}\mathrel{=}i_1\\\Varid{outBlockchain}\comp \Conid{Bcs}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\;(\Conid{Bc}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outBlockchain}\;(\Conid{Bcs}\;\Varid{bs})\mathrel{=}i_2\;\Varid{bs}\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{outBlockchain}\;(\Conid{Bc}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}{}\<[E]%
 \\
 \>[B]{}\Varid{outBlockchain}\;(\Conid{Bcs}\;\Varid{bs})\mathrel{=}i_2\;\Varid{bs}{}\<[E]%
@@ -1321,7 +1345,36 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{anaBlockchain}\;\Varid{g}\mathrel{=}\Varid{inBlockchain}\comp \Varid{recBlockchain}\;(\Varid{anaBlockchain}\;\Varid{g})\comp \Varid{g}{}\<[E]%
 \\
 \>[B]{}\Varid{hyloBlockchain}\;\Varid{h}\;\Varid{g}\mathrel{=}\Varid{cataBlockchain}\;\Varid{h}\comp \Varid{anaBlockchain}\;\Varid{g}{}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{Blockchain}}
+           \ar[d]_-{\ensuremath{\Varid{allTransactions}}}^-{\ensuremath{\cata{\Varid{g}}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Blockchain}}
+          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\mathbin{*}\Varid{allTransactions}}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+     \ensuremath{\Conid{Transactions}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Transactions}}
+          \ar[l]_-{\ensuremath{[\mskip1.5mu \p2\comp \p2,\mathsf{conc}\comp ((\p2\comp \p2)\mathbin{*}\Varid{id})\mskip1.5mu]}}^-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{(\p2\comp \p2)\mathbin{+}(\p2\comp \p2)\mathbin{*}\Varid{id}}}
+\\
+&
+    \ensuremath{\Conid{Transactions}\mathbin{+}\Conid{Transactions}\mathbin{*}\Conid{Transactions}}
+          \ar[ul]^-{\ensuremath{[\mskip1.5mu \Varid{id},\mathsf{conc}\mskip1.5mu]}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{10}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{46}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{allTransactions}\mathrel{=}\Varid{cataBlockchain}\;\alt{\p2\comp \p2}{\mathsf{conc}\comp ((\p2\comp \p2)\times\Varid{id})}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{sumTo}\mathbin{::}\Conid{Transaction}\to \Conid{Ledger}\to \Conid{Ledger}{}\<[E]%
@@ -1359,7 +1412,37 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{allMagicNr}\mathbin{::}\Conid{Blockchain}\to [\mskip1.5mu [\mskip1.5mu \Conid{Char}\mskip1.5mu]\mskip1.5mu]{}\<[E]%
 \\
 \>[B]{}\Varid{allMagicNr}\mathrel{=}\Varid{cataBlockchain}\;\alt{\Varid{singl}\comp \p1}{\Varid{cons}\comp (\p1\times\Varid{id})}{}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{Blockchain}}
+           \ar[d]^-{\ensuremath{\Varid{allMagicNr}}}_-{\ensuremath{\cata{\Varid{g}}}}
+           \ar@/_3.0pc/[ddd]_-{\ensuremath{\Varid{isValidMagicNr}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Blockchain}}
+          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\mathbin{*}\Varid{allMagicNr}}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+    \ensuremath{[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[dd]^{\ensuremath{\Varid{allUnique}}}
+&
+    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[l]_-{\ensuremath{[\mskip1.5mu \Varid{singl}\comp \p1,\Varid{cons}\comp (\p1\mathbin{*}\Varid{id})\mskip1.5mu]}}^-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{\p1\mathbin{+}\p1\mathbin{*}\Varid{id}}}
+\\
+&
+    \ensuremath{\Conid{MagicNr}\mathbin{+}\Conid{MagicNr}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
+          \ar[ul]^-{\ensuremath{[\mskip1.5mu \Varid{singl},\Varid{cons}\mskip1.5mu]}}
+\\
+    \ensuremath{\Conid{Bool}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{isValidMagicNr}\mathrel{=}\Varid{allUnique}\comp \Varid{allMagicNr}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
@@ -1369,7 +1452,6 @@ outras funções auxiliares que sejam necessárias.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{uncurryCell}\mathbin{::}(\Varid{a},(\Conid{Int},\Conid{Int}))\to \Conid{QTree}\;\Varid{a}{}\<[E]%
 \\
@@ -1380,7 +1462,39 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{uncurryBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\mathrel{=}\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{inQTree}\mathrel{=}\alt{\Varid{uncurryCell}}{\Varid{uncurryBlock}}{}\<[E]%
-\\
+\ColumnHook
+\end{hscode}\resethooks
+
+Dedução outQTree:
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outQTree}\comp \Varid{inQTree}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inQTree; Reflexão-+}
+%
+  \ensuremath{\Varid{outQTree}\comp [\mskip1.5mu \Varid{uncurryCell},\Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outQTree}\comp \Varid{uncurryCell},\Varid{outQTree}\comp \Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\comp \Varid{uncurryCell}\mathrel{=}i_1\\\Varid{outQTree}\comp \Varid{uncurryBlock}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Varid{uncurryCell}\;(\Varid{a},(\Varid{b},\Varid{c})))\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c}))\\\Varid{outQTree}\;(\Varid{uncurryBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\end{lcbr}}
+%
+\just\equiv{uncurryCell; uncurryBlock}
+%
+        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c}))\\\Varid{outQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{outQTree}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_1\;(((\Varid{a},(\Varid{b},\Varid{c})))){}\<[E]%
 \\
 \>[B]{}\Varid{outQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}i_2\;((\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))){}\<[E]%
@@ -1398,39 +1512,111 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\mathbf{instance}\;\Conid{Functor}\;\Conid{QTree}\;\mathbf{where}{}\<[E]%
 \\
 \>[B]{}\hsindent{5}{}\<[5]%
-\>[5]{}\mathsf{fmap}\;\Varid{f}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp ((\Varid{f}\times(\Varid{id}\times\Varid{id}))+\Varid{id})){}\<[E]%
+\>[5]{}\mathsf{fmap}\;\Varid{f}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp ((\Varid{f}\times\Varid{id})+\Varid{id})){}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{rotateCell}\mathbin{::}(\Varid{a},(\Conid{Int},\Conid{Int}))\to (\Varid{a},(\Conid{Int},\Conid{Int})){}\<[E]%
 \\
-\>[B]{}\Varid{rotateCell}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}(\Varid{a},(\Varid{c},\Varid{b})){}\<[E]%
+\>[B]{}\Varid{rotateCell}\;(\Varid{a},(\Varid{x},\Varid{y}))\mathrel{=}(\Varid{a},(\Varid{y},\Varid{x})){}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{rotateBlock}\mathbin{::}(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},\Conid{QTree}\;\Varid{a})))\to (\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},(\Conid{QTree}\;\Varid{a},\Conid{QTree}\;\Varid{a}))){}\<[E]%
 \\
 \>[B]{}\Varid{rotateBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\mathrel{=}(\Varid{c},(\Varid{a},(\Varid{d},\Varid{b}))){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}\;\Conid{A}}
+           \ar[d]_-{\ensuremath{\Varid{rotateQTree}}}^-{\ensuremath{\cata{\Varid{g}}}}
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{rotateQTree}\mathbin{*}(\Varid{rotateQTree}\mathbin{*}(\Varid{rotateQTree}\mathbin{*}\Varid{rotateQTree}))}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+     \ensuremath{\Conid{QTree}\;\Conid{A}}
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[l]_-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{\Varid{rotateCell}\mathbin{+}\Varid{rotateBlock}}}
+\\
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[ul]^-{\ensuremath{\mathbf{in}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{rotateQTree}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp (\Varid{rotateCell}+\Varid{rotateBlock})){}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{scaleCell}\mathbin{::}\Conid{Int}\to (\Varid{a},(\Conid{Int},\Conid{Int}))\to (\Varid{a},(\Conid{Int},\Conid{Int})){}\<[E]%
 \\
 \>[B]{}\Varid{scaleCell}\;\Varid{x}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}(\Varid{a},(\Varid{b}\mathbin{*}\Varid{x},\Varid{c}\mathbin{*}\Varid{x})){}\<[E]%
-\\[\blanklineskip]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}\;\Conid{A}}
+           \ar[d]_-{\ensuremath{\Varid{scaleQTree}}}^-{\ensuremath{\cata{\Varid{g}}}}
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{scaleQTree}\mathbin{*}(\Varid{scaleQTree}\mathbin{*}(\Varid{scaleQTree}\mathbin{*}\Varid{scaleQTree}))}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+     \ensuremath{\Conid{QTree}\;\Conid{A}}
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[l]_-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{\Varid{scaleCell}\mathbin{+}\Varid{id}}}
+\\
+&
+    \ensuremath{\Conid{A}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}(\Conid{QTree}\;\Conid{A}\mathbin{*}\Conid{QTree}\;\Conid{A}))}
+          \ar[ul]^-{\ensuremath{\mathbf{in}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{scaleQTree}\;\Varid{x}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp ((\Varid{scaleCell}\;\Varid{x})+\Varid{id})){}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{invertCell}\mathbin{::}(\Conid{PixelRGBA8},(\Conid{Int},\Conid{Int}))\to (\Conid{PixelRGBA8},(\Conid{Int},\Conid{Int})){}\<[E]%
+\>[B]{}\Varid{invertColor}\mathbin{::}\Conid{PixelRGBA8}\to \Conid{PixelRGBA8}{}\<[E]%
 \\
-\>[B]{}\Varid{invertCell}\;((\Conid{PixelRGBA8}\;\Varid{r}\;\Varid{g}\;\Varid{b}\;\Varid{a}),(\Varid{x},\Varid{y}))\mathrel{=}((\Conid{PixelRGBA8}\;(\mathrm{255}\mathbin{-}\Varid{r})\;(\mathrm{255}\mathbin{-}\Varid{g})\;(\mathrm{255}\mathbin{-}\Varid{b})\;\Varid{a}),(\Varid{x},\Varid{y})){}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{invertQTree}\mathrel{=}\Varid{cataQTree}\;(\Varid{inQTree}\comp (\Varid{invertCell}+\Varid{id})){}\<[E]%
+\>[B]{}\Varid{invertColor}\;(\Conid{PixelRGBA8}\;\Varid{r}\;\Varid{g}\;\Varid{b}\;\Varid{a})\mathrel{=}\Conid{PixelRGBA8}\;(\mathrm{255}\mathbin{-}\Varid{r})\;(\mathrm{255}\mathbin{-}\Varid{g})\;(\mathrm{255}\mathbin{-}\Varid{b})\;\Varid{a}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\Conid{QTree}\;\Conid{RGB}}
+           \ar[d]_-{\ensuremath{\Varid{scaleQTree}}}^-{\ensuremath{\cata{\Varid{g}}}}
+&
+    \ensuremath{\Conid{RGB}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}\Conid{QTree}\;\Conid{RGB}))}
+          \ar[d]_-{\ensuremath{\Varid{id}\mathbin{+}\Varid{invertQTree}\mathbin{*}(\Varid{invertQTree}\mathbin{*}(\Varid{invertQTree}\mathbin{*}\Varid{invertQTree}))}}
+          \ar[l]_-{\ensuremath{\mathbf{in}}}
+\\
+     \ensuremath{\Conid{QTree}\;\Conid{RGB}}
+&
+    \ensuremath{\Conid{RGB}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}\Conid{QTree}\;\Conid{RGB}))}
+          \ar[l]_-{\ensuremath{\Varid{g}}}
+          \ar[d]^{\ensuremath{\Varid{invertColor}\mathbin{+}\Varid{id}}}
+\\
+&
+    \ensuremath{\Conid{RGB}\mathbin{*}(\Conid{Int}\mathbin{*}\Conid{Int})\mathbin{+}\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}(\Conid{QTree}\;\Conid{RGB}\mathbin{*}\Conid{QTree}\;\Conid{RGB}))}
+          \ar[ul]^-{\ensuremath{\mathbf{in}}}
+}
+\end{eqnarray*}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{invertQTree}\mathrel{=}\mathsf{fmap}\;\Varid{invertColor}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{compressQTree}\;\Varid{x}\mathrel{=}\bot {}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{isBackground}\mathbin{::}(\Conid{PixelRGBA8},(\Conid{Int},\Conid{Int}))\to \Conid{Bool}{}\<[E]%
-\\
-\>[B]{}\Varid{isBackground}\;((\Conid{PixelRGBA8}\;\mathrm{255}\;\mathrm{255}\;\mathrm{255}\;\mathrm{255}),(\Varid{x},\Varid{y}))\mathrel{=}\Conid{True}{}\<[E]%
-\\
-\>[B]{}\Varid{isBackground}\;((\Conid{PixelRGBA8}\;\Varid{r}\;\Varid{g}\;\Varid{b}\;\Varid{a}),(\Varid{x},\Varid{y}))\mathrel{=}\Conid{False}{}\<[E]%
-\\[\blanklineskip]%
-\>[B]{}\Varid{outlineQTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{outlineQTree}\;\Varid{f}\mathrel{=}\Varid{qt2bm}\comp (\mathsf{fmap}\;\Varid{f}){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
@@ -1449,7 +1635,6 @@ outras funções auxiliares que sejam necessárias.
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{inUnit}\mathbin{::}\Varid{b}\to \Conid{FTree}\;\Varid{a}\;\Varid{b}{}\<[E]%
 \\
@@ -1460,7 +1645,38 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\Varid{inComp}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}\Conid{Comp}\;\Varid{a}\;\Varid{b}\;\Varid{c}{}\<[E]%
 \\[\blanklineskip]%
 \>[B]{}\Varid{inFTree}\mathrel{=}\alt{\Varid{inUnit}}{\Varid{inComp}}{}\<[E]%
-\\
+\ColumnHook
+\end{hscode}\resethooks
+
+Dedução outFTree:
+\begin{eqnarray*}
+\start
+  \ensuremath{\Varid{outFTree}\comp \Varid{inFTree}\mathrel{=}\Varid{id}}
+%
+\just\equiv{inFTree; Reflexão-+}
+%
+  \ensuremath{\Varid{outFTree}\comp [\mskip1.5mu \Varid{inUnit},\Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Fusão-+}
+%
+  \ensuremath{[\mskip1.5mu \Varid{outFTree}\comp \Varid{inUnit},\Varid{outFTree}\comp \Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
+%
+\just\equiv{Eq-+}
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\comp \Varid{inUnit}\mathrel{=}i_1\\\Varid{outFTree}\comp \Varid{inComp}\mathrel{=}i_2\end{lcbr}}
+%
+\just\equiv{Igualdade extensional; Def-comp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Varid{inUnit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Varid{inComp}\;(\Varid{a},(\Varid{b},\Varid{c})))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
+%
+\just\equiv{inUnit; inComp}
+%
+        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Conid{Unit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Conid{Comp}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
+\qed
+\end{eqnarray*}
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{outFTree}\;(\Conid{Unit}\;\Varid{b})\mathrel{=}i_1\;(\Varid{b}){}\<[E]%
 \\
 \>[B]{}\Varid{outFTree}\;(\Conid{Comp}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_2\;((\Varid{a},(\Varid{b},\Varid{c}))){}\<[E]%
@@ -1480,7 +1696,7 @@ outras funções auxiliares que sejam necessárias.
 \>[B]{}\hsindent{5}{}\<[5]%
 \>[5]{}\Varid{bimap}\;\Varid{f}\;\Varid{g}\mathrel{=}\Varid{cataFTree}\;(\Varid{inFTree}\comp (\Varid{g}+(\Varid{f}\times\Varid{id}))){}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{generatePTree}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{generatePTree}\mathrel{=}\Varid{anaFTree}\;(\Varid{outFTree}\comp (\anonymous +\conj{\anonymous }{\conj{\Varid{id}}{\Varid{id}}})){}\<[E]%
 \\
 \>[B]{}\Varid{drawPTree}\mathrel{=}\bot {}\<[E]%
 \ColumnHook
@@ -1520,133 +1736,8 @@ Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\
 
 
 
-% OUT - 1
-\begin{eqnarray*}
-\start
-  \ensuremath{\Varid{outBlockchain}\comp \Varid{inBlockchain}\mathrel{=}\Varid{id}}
-%
-\just\equiv{inBlockchain; Reflexão-+}
-%
-  \ensuremath{\Varid{outBlockchain}\comp [\mskip1.5mu \Conid{Bc},\Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Fusão-+}
-%
-  \ensuremath{[\mskip1.5mu \Varid{outBlockchain}\comp \Conid{Bc},\Varid{outBlockchain}\comp \Conid{Bcs}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Eq-+}
-        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\comp \Conid{Bc}\mathrel{=}i_1\\\Varid{outBlockchain}\comp \Conid{Bcs}\mathrel{=}i_2\end{lcbr}}
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        \ensuremath{\begin{lcbr}\Varid{outBlockchain}\;(\Conid{Bc}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outBlockchain}\;(\Conid{Bcs}\;\Varid{bs})\mathrel{=}i_2\;\Varid{bs}\end{lcbr}}
-\qed
-\end{eqnarray*}
 
 
-% DIAGRAMA 1.1
-\begin{eqnarray*}
-\xymatrix@C=2cm{
-    \ensuremath{\Conid{Blockchain}}
-           \ar[d]_-{allTransactions = \ensuremath{\cata{\Varid{g}}}}
-&
-    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Blockchain}}
-          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\mathbin{*}\cata{\Varid{g}}}}
-          \ar[l]_-{\ensuremath{\mathbf{in}}}
-\\
-     \ensuremath{\Conid{Transactions}}
-&
-    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Transactions}}
-          \ar[l]^-{\ensuremath{\Varid{g}}}
-          \ar[d]^{\ensuremath{\Varid{g}\mathbin{+}\Varid{g}\mathbin{*}\Varid{id}}}
-\\
-&
-    \ensuremath{\Conid{Transactions}\mathbin{+}\Conid{Transactions}\mathbin{*}\Conid{Transactions}}
-          \ar[ul]^-{\ensuremath{[\mskip1.5mu \Varid{id},\mathsf{conc}\mskip1.5mu]}}
-}
-\end{eqnarray*}
-
-
-% DIAGRAMA 1.3
-\begin{eqnarray*}
-\xymatrix@C=2cm{
-    \ensuremath{\Conid{Blockchain}}
-           \ar[d]_-{\ensuremath{\cata{\Varid{g}}}}
-           \ar@/_3.0pc/[ddd]_-{\ensuremath{\Varid{isValidMagicNr}}}
-&
-    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}\Conid{Blockchain}}
-          \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\mathbin{*}\cata{\Varid{g}}}}
-          \ar[l]_-{\ensuremath{\mathbf{in}}}
-\\
-    \ensuremath{[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
-          \ar[dd]^{\ensuremath{\Varid{allUnique}}}
-&
-    \ensuremath{\Conid{Block}\mathbin{+}\Conid{Block}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
-          \ar[l]^-{\ensuremath{\Varid{g}}}
-          \ar[d]^{\ensuremath{\p1\mathbin{+}\p1\mathbin{*}\Varid{id}}}
-\\
-&
-    \ensuremath{\Conid{MagicNr}\mathbin{+}\Conid{MagicNr}\mathbin{*}[\mskip1.5mu \Conid{MagicNr}\mskip1.5mu]}
-          \ar[ul]^-{\ensuremath{[\mskip1.5mu \Varid{singl},\Varid{cons}\mskip1.5mu]}}
-\\
-    \ensuremath{\Conid{Bool}}
-}
-\end{eqnarray*}
-
-
-% OUT - 2
-\begin{eqnarray*}
-\start
-  \ensuremath{\Varid{outQTree}\comp \Varid{inQTree}\mathrel{=}\Varid{id}}
-%
-\just\equiv{inQTree; Reflexão-+}
-%
-  \ensuremath{\Varid{outQTree}\comp [\mskip1.5mu \Varid{uncurryCell},\Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Fusão-+}
-%
-  \ensuremath{[\mskip1.5mu \Varid{outQTree}\comp \Varid{uncurryCell},\Varid{outQTree}\comp \Varid{uncurryBlock}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Eq-+}
-        \ensuremath{\begin{lcbr}\Varid{outQTree}\comp \Varid{uncurryCell}\mathrel{=}i_1\\\Varid{outQTree}\comp \Varid{uncurryBlock}\mathrel{=}i_2\end{lcbr}}
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Varid{uncurryCell}\;(\Varid{a},(\Varid{b},\Varid{c}))\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c})))\;(\Varid{outQTree}\;(\Varid{uncurryBlock}\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d}))))\\\cdot \end{lcbr}}
-%
-\just\equiv{uncurryCell; uncurryBlock}
-%
-        \ensuremath{\begin{lcbr}\Varid{outQTree}\;(\Conid{Cell}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_1\;(\Varid{a},(\Varid{b},\Varid{c}))\\\Varid{outQTree}\;(\Conid{Block}\;\Varid{a}\;\Varid{b}\;\Varid{c}\;\Varid{d})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},(\Varid{c},\Varid{d})))\end{lcbr}}
-\qed
-\end{eqnarray*}
-
-
-
-
- OUT - 4
-\begin{eqnarray*}
-\start
-  \ensuremath{\Varid{outFTree}\comp \Varid{inFTree}\mathrel{=}\Varid{id}}
-%
-\just\equiv{inFTree; Reflexão-+}
-%
-  \ensuremath{\Varid{outFTree}\comp [\mskip1.5mu \Varid{inUnit},\Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Fusão-+}
-%
-  \ensuremath{[\mskip1.5mu \Varid{outFTree}\comp \Varid{inUnit},\Varid{outFTree}\comp \Varid{inComp}\mskip1.5mu]\mathrel{=}[\mskip1.5mu i_1,i_2\mskip1.5mu]}
-%
-\just\equiv{Eq-+}
-        \ensuremath{\begin{lcbr}\Varid{outFTree}\comp \Varid{inUnit}\mathrel{=}i_1\\\Varid{outFTree}\comp \Varid{inComp}\mathrel{=}i_2\end{lcbr}}
-%
-\just\equiv{Igualdade extensional; Def-comp}
-%
-        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Varid{inUnit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Varid{inComp}\;(\Varid{a},(\Varid{b},\Varid{c})))\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
-%
-\just\equiv{inUnit; inComp}
-%
-        \ensuremath{\begin{lcbr}\Varid{outFTree}\;(\Conid{Unit}\;\Varid{b})\mathrel{=}i_1\;\Varid{b}\\\Varid{outFTree}\;(\Conid{Comp}\;\Varid{a}\;\Varid{b}\;\Varid{c})\mathrel{=}i_2\;(\Varid{a},(\Varid{b},\Varid{c}))\end{lcbr}}
-\qed
-\end{eqnarray*}
 
 %----------------- Fim do anexo com soluções dos alunos ------------------------%
 
