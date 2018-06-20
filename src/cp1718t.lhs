@@ -1043,7 +1043,7 @@ hyloQTree h g = cataQTree h . anaQTree g
 
 instance Functor QTree where
     fmap f = cataQTree (inQTree . ((f >< id) -|- id))
-                                  -- (f >< (id >< id)) -|- (id >< (id >< (id >< id)))
+                                 
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
 rotateCell (a, (b, c)) = (a, (c, b))
@@ -1080,9 +1080,196 @@ outlineQTree = undefined
 
 \subsection*{Problema 3}
 
+Para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split (g) (s)| temos primeiro de chegar a versões \textlit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    (f k) . in = h . fF (split (f k) (l k))
+  )(
+    (l k) . in = j . fF (split (f k) (l k))
+  )|
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    g . in = q . fF (split g s)
+  )(
+    s . in = t . fF (split g s)
+  )|
+\end{eqnarray*}
+
+Cálculo da versão \texlit{pointfree} de |f k| pretendida:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    f k 0 = 1
+  )(
+    f k (d+1) = l k d * f k d
+  )|
+%
+\just\equiv{ Igualdade extensional (73), Def-const (76), Definição de succ, Def-comp (74), Def-split (78), Definição de mul, Comutatividade da multiplicação }
+%
+        |lcbr(
+    (f k) . (const 0) = (const 1)
+  )(
+    (f k) . succ = mul . (split (f k) (l k))
+  )|
+%
+\just\equiv{ in = |either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+%
+  |(f k) . in  = either (const 1) (mul . (split (f k) (l k)))|
+%
+\just\equiv{ Natural-id (1), Absorção-+ (22), |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
+%
+  |(f k) . in  = (either (const 1) mul) . fF (split (f k) (l k))|
+\end{eqnarray*}
+
+Cálcudo da versão de l k pretendida:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    l k 0 = k+1
+  )(
+    l k (d+1) = l k d + 1
+  )|
+%
+\just\equiv{ Igualdade extensional (73), Def-const (76), Def-comp (74), Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+%
+  |(l k) . in = either (const (k+1)) (succ . (l k))|
+%
+\just\equiv{ Cancelamento-|><| (7) }
+%
+  |(l k) . in = either (const (k+1)) (succ . p2 . (split (fk) (l k)))|
+%
+\just\equiv{ Absorção-+ (22), Natural-id (1), |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
+%
+  |(l k) . in = (either (const (k+1)) (succ . p2)) . fF (split (f k) (l k))|
+\end{eqnarray*}
+
+Cálculo da versão de g pretendida:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    g 0 = 1
+  )(
+    g (d+1) = s d * g d 
+  )|
+%
+\just\equiv{Igualdade extensional (73), Def-const (76), Definição de succ, Def-split (78), Definição de mul, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+%
+  |g . in = either (const 1) (mul . (split g s))|
+%
+\just\equiv{Absorção-+ (22), Natural-id (1), |fF (split g s) = id + (split g s)|}
+%
+  |g . in = (either (const 1) mul) . fF (split g s)|
+\end{eqnarray*}
+
+Cálculo da versão de s pretendida:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    s 0 = 1
+  )(
+    s (d+1) = s d + 1 
+  )|
+%
+\just\equiv{Igualdade extensional (73), Def-const (76), Def-comp (74), Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+%
+  |s . in = either (const 1) (succ . s)|
+%
+\just\equiv{Cancelamento-|><| (7)}
+%
+  |s . in = either (const 1) (succ . p2 . (split g s))| 
+%
+\just\equiv{Absorção-+ , Natural-id , |fF (split g s) = id + (split g s)|}
+%
+  |s . in = (either (const 1) (succ . p2)) . fF (split g s)|
+\end{eqnarray*}
+
+Assim, temos o seguinte par de sistema de equações:
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    (f k) . in = (either (const 1) mul) . fF (split (f k) (l k))
+  )(
+    (l k) . in = (either (const (k+1)) (succ . p2)) . fF (split (f k) (l k))
+  )|
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\start
+        |lcbr(
+    g . in = (either (const 1) mul) . fF (split g s)
+  )(
+    s . in = (either (const 1) (succ . p2)) . fF (split g s)
+  )|
+\end{eqnarray*}
+
+Neste momento, podemos aplicar a lei da recursividade múltipla em ambos os sistemas. Da sua aplicação resultam as seguintes equações:
+
+\begin{eqnarray*}
+\start
+  |split (f k) (l k) = cataNat ( split (either (const 1) mul) (either (const (k+1)) (succ . p2)) )|
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\start
+  |split g s = cataNat ( split (either (const 1) mul) (either (const 1) (succ . p2)) )|
+\end{eqnarray*}
+
+Combinando os resultados  com a lei "Banana-Split" temos:
+
+\begin{eqnarray*}
+\start
+  |split (cataNat (split (either (const 1) mul) (either (const (k+1)) (succ . p2)) )) (cataNat  (split (either (const 1) mul) (either (const 1) (succ . p2)) ))|
+%
+\just\equiv{"Banana-Split" (51)}
+  |cataNat ( ( (split (either (const 1) mul) (either (const k+1) (succ . p2)) ) >< (split (either (const 1) mul) (either (const 1) (succ . p2)) ) ) . (split (fF p1) (fF p2)) )|
+%
+\just\equiv{Absorção-|><| (11), Lei da Troca (28)}
+  |cataNat (split ((either (split (const 1) (const (k+1))) (split mul (succ . p2) )) . fF p1) ((either (split (const 1) (const 1)) (split mul (succ . p2)) ) . fF p2) )|
+%
+\just\equiv{|fF p1 = id + p1| , |fF p2 = id + p2|, Absorção-+ (22), Natural-id (1), Fusão-|><| (9)}
+  |cataNat ( split (either (split (const 1) (const (k+1))) (split (mul . p1) (succ . p2 . p1))) (either (split (const 1) (const 1)) (split (mul . p2) (succ . p2 . p2))))|
+%
+\just\equiv{Lei da troca (28)}
+  |cataNat ( either (split (split (const 1) (const (k+1))) (split (const 1) (const 1))) (split (split (mul . p1) (succ . p2 . p1)) (split (mul . p2) (succ . p2 . p2))))|
+%
+\just\equiv{|for m i = cataNat (either (const i) m)|, |split (split (const 1) (const (k+1))) (split (const 1) (const 1))| = ((1,k+1),(1,1)), fazendo m = |split (split (mul . p1) (succ . p2 . p1)) (split (mul . p2) (succ . p2 . p2))|}
+%
+  |for m ((1, k+1),(1,1))|
+\qed
+\end{eqnarray*}
+
+Podemos ainda simplificar a função m, como se demonstra de seguida.
+
+\begin{eqnarray*}
+\start
+  |m = split (split (mul . p1) (succ . p2 . p1)) (split (mul . p2) (succ . p2 . p2))|
+%
+\just\equiv{ Fusão-|><| (9) }
+%
+  |m = split ((split (mul) (succ . p2)) . p1) ((split (mul) (succ . p2)) . p2)|
+%
+\just\equiv{ Def-|><| (10) }
+%
+  |m = (split mul (succ . p2)) >< (split mul (succ . p2))| 
+\end{eqnarray*}
+
+Para chegarmos a implementações corretas das funções base k e loop temos de ter atenção ao tipo das mesmas. A função loop recebe como argumento um 4-tuplo |(Nat0, Nat0, Nat0, Nat0)| e produz um valor do mesmo tipo. A função m recebe e produz um valor do tipo |((Nat0, Nat0) , (Nat0, Nat0))|. Deste modo, surgem as seguintes implementações para base k e loop:
+
 \begin{code}
-base = undefined
-loop = undefined
+base k = (1, k+1, 1, 1)
+loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . aux
+       where aux (a,b,c,d) = ((a,b),(c,d))
+             converseAux ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
 
 \subsection*{Problema 4}
