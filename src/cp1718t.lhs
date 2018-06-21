@@ -1380,7 +1380,7 @@ Cálculo da versão de s pretendida:
     s (d+1) = s d + 1 
   )|
 %
-\just\equiv{Igualdade extensional (73), Def-const (76), Def-comp (74), Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+\just\equiv{Igualdade extensional (73), Def-const (76), Def-comp (74), \newline Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
 %
   |s . in = either (const 1) (succ . s)|
 %
@@ -1477,14 +1477,12 @@ loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . au
 
 \begin{code}
 
-inUnit :: b -> FTree a b
-inUnit b = Unit b
 
 inComp :: (a, (FTree a b, FTree a b)) -> FTree a b
 inComp (a, (b, c)) = Comp a b c
 
+inFTree = either Unit  inComp
 
-inFTree = either inUnit inComp
 \end{code}
 
 Dedução outFTree:
@@ -1529,7 +1527,7 @@ outFTree (Unit b) = i1 (b)
 outFTree (Comp a b c) = i2 ((a, (b, c)))
 
 baseFTree f g h = g -|- (f >< (h >< h))
-recFTree f = id -|- (id >< (f >< f))
+recFTree f = baseFTree id id f
 cataFTree g = g . recFTree (cataFTree g) . outFTree
 anaFTree g = inFTree . recFTree (anaFTree g) . g
 hyloFTree h g = cataFTree h . anaFTree g
@@ -1539,7 +1537,7 @@ instance Bifunctor FTree where
 
 
 
-generatePTree = undefined --anaFTree (outFTree . (_ -|- (split (_) (split (id) (id)))))
+generatePTree = undefined 
 drawPTree = undefined
 \end{code}
 
