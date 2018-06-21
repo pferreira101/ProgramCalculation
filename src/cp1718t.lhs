@@ -1536,7 +1536,6 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
     
-
 lastSquare :: () -> Square
 lastSquare _ = 1
 
@@ -1636,6 +1635,7 @@ Para determinar o |muB| partimos do diagrama:
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
 muB = undefined
 dist = undefined
+
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
