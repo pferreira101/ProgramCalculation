@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 41
 \\\hline
-a11111 & Nome1 (preencher)	
+a80261 & Henrique Pereira	
 \\
-a22222 & Nome2 (preencher)	
+a82364 & Pedro Moreira	
 \\
-a33333 & Nome3 (preencher)	
+a81135 & Pedro Ferreira	
 \end{tabular}
 \end{center}
 
@@ -987,11 +987,11 @@ Dedução outBlockchain:
 %
 \just\equiv{inBlockchain; Reflexão-+}
 %
-  |outBlockchain . [Bc, Bcs] = [i1, i2]|
+  |outBlockchain . either (Bc) (Bcs) = either (i1) (i2)|
 %
 \just\equiv{Fusão-+}
 %
-  |[outBlockchain . Bc, outBlockchain . Bcs] = [i1, i2]|
+  |either (outBlockchain . Bc) (outBlockchain . Bcs) = either (i1) (i2)|
 %
 \just\equiv{Eq-+}
         |lcbr(
@@ -1127,11 +1127,11 @@ Dedução outQTree:
 %
 \just\equiv{inQTree; Reflexão-+}
 %
-  |outQTree . [uncurryCell, uncurryBlock] = [i1, i2]|
+  |outQTree . either (uncurryCell) (uncurryBlock) = either (i1) (i2)|
 %
 \just\equiv{Fusão-+}
 %
-  |[outQTree . uncurryCell, outQTree . uncurryBlock] = [i1, i2]|
+  |either (outQTree . uncurryCell) (outQTree . uncurryBlock) = either (i1) (i2)|
 %
 \just\equiv{Eq-+}
         |lcbr(
@@ -1246,21 +1246,21 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |QTree RGB|
+    |QTree PixelRGBA8|
            \ar[d]_-{|invertQTree|}^-{|cataNat g|}
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
-          \ar[d]_-{|id + invertQTree * (invertQTree * (invertQTree * invertQTree))|}
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
+          \ar[d]^-{|id + invertQTree|^|4|}
           \ar[l]_-{|in|}
 \\
-     |QTree RGB|
+     |QTree PixelRGBA8|
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
           \ar[l]_-{|g|}
           \ar[d]^{|invertColor + id|}
 \\
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1468,9 +1468,9 @@ Para chegarmos a implementações corretas das funções base k e loop temos de 
 
 \begin{code}
 base k = (1, k+1, 1, 1)
-loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . aux
-       where aux (a,b,c,d) = ((a,b),(c,d))
-             converseAux ((a,b),(c,d)) = (a,b,c,d)
+loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPairs
+       where toPairs (a,b,c,d) = ((a,b),(c,d))
+             fromPairs ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
 
 \subsection*{Problema 4}
@@ -1481,7 +1481,7 @@ loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . au
 inComp :: (a, (FTree a b, FTree a b)) -> FTree a b
 inComp (a, (b, c)) = Comp a b c
 
-inFTree = either Unit  inComp
+inFTree = either Unit inComp
 
 \end{code}
 
@@ -1523,6 +1523,7 @@ Dedução outFTree:
 \qed
 \end{eqnarray*}
 \begin{code}
+
 outFTree (Unit b) = i1 (b)
 outFTree (Comp a b c) = i2 ((a, (b, c)))
 
@@ -1536,17 +1537,50 @@ instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
 
 
+lastSquare :: () -> Square
+lastSquare _ = 1
 
-generatePTree = undefined 
+nextSquare :: Int -> Square
+nextSquare 0 = lastSquare(()) * (2/sqrt(2))
+nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
+
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Nat0|
+           \ar[d]_-{|generatePTree|}^-{|anNat g|}
+           \ar[r]_-{|outNat|}
+&
+    |1 + Nat0|
+          \ar[r]_-{|.......|}
+&
+    |Square + Square * (Nat0 * Nat0)|
+           \ar[d]^-{|id + id * (generatePTree * generatePTree)|}
+\\
+    |PTree|
+          \ar[rr]_-{|outFTree|}
+&
+&
+    |Square + Square * (PTree * PTree)|
+}
+\end{eqnarray*}
+
+\begin{code}
+
+generatePTree = anaFTree ((lastSquare -|- (split (nextSquare) (split id id))) . outNat)
+
 drawPTree = undefined
 \end{code}
 
 \subsection*{Problema 5}
 
 \begin{code}
+
 singletonbag = undefined
 muB = undefined
 dist = undefined
+
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
