@@ -1116,7 +1116,7 @@ uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
 uncurryBlock (a, (b, (c, d))) = Block a b c d
 
 
-inQTree = either uncurryCell uncurryBlock
+inQTree = either ( (uncurry (uncurry Cell)) . assocl )  ( (uncurry  (uncurry (uncurry Block))) . (split (split (id >< p1) (p1 . p2 . p2)) (p2 . p2 . p2) ) )
 
 \end{code}
 
@@ -1175,7 +1175,7 @@ instance Functor QTree where
 
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
-rotateCell (a, (x, y)) = (a, (y, x))
+rotateCell = id >< swap
 
 rotateBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> (QTree a, (QTree a, (QTree a, QTree a)))
 rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
@@ -1561,7 +1561,7 @@ genSquare s (n) = let (s1,s2) = mkBranches s
 
 drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c)))) 
-                        
+
 \end{code}
 
 \subsection*{Problema 5}
