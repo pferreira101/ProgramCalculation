@@ -105,13 +105,13 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 99 (preencher)
+\textbf{Grupo} nr. & 41
 \\\hline
-a11111 & Nome1 (preencher)	
+a80261 & Henrique Pereira	
 \\
-a22222 & Nome2 (preencher)	
+a82364 & Pedro Moreira	
 \\
-a33333 & Nome3 (preencher)	
+a81135 & Pedro Ferreira	
 \end{tabular}
 \end{center}
 
@@ -987,11 +987,11 @@ Dedução outBlockchain:
 %
 \just\equiv{inBlockchain; Reflexão-+}
 %
-  |outBlockchain . [Bc, Bcs] = [i1, i2]|
+  |outBlockchain . either (Bc) (Bcs) = either (i1) (i2)|
 %
 \just\equiv{Fusão-+}
 %
-  |[outBlockchain . Bc, outBlockchain . Bcs] = [i1, i2]|
+  |either (outBlockchain . Bc) (outBlockchain . Bcs) = either (i1) (i2)|
 %
 \just\equiv{Eq-+}
         |lcbr(
@@ -1127,11 +1127,11 @@ Dedução outQTree:
 %
 \just\equiv{inQTree; Reflexão-+}
 %
-  |outQTree . [uncurryCell, uncurryBlock] = [i1, i2]|
+  |outQTree . either (uncurryCell) (uncurryBlock) = either (i1) (i2)|
 %
 \just\equiv{Fusão-+}
 %
-  |[outQTree . uncurryCell, outQTree . uncurryBlock] = [i1, i2]|
+  |either (outQTree . uncurryCell) (outQTree . uncurryBlock) = either (i1) (i2)|
 %
 \just\equiv{Eq-+}
         |lcbr(
@@ -1246,21 +1246,21 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
-    |QTree RGB|
+    |QTree PixelRGBA8|
            \ar[d]_-{|invertQTree|}^-{|cataNat g|}
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
-          \ar[d]_-{|id + invertQTree * (invertQTree * (invertQTree * invertQTree))|}
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
+          \ar[d]^-{|id + invertQTree|^|4|}
           \ar[l]_-{|in|}
 \\
-     |QTree RGB|
+     |QTree PixelRGBA8|
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
           \ar[l]_-{|g|}
           \ar[d]^{|invertColor + id|}
 \\
 &
-    |RGB * (Int * Int) + QTree RGB * (QTree RGB * (QTree RGB * QTree RGB))|
+    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1468,9 +1468,9 @@ Para chegarmos a implementações corretas das funções base k e loop temos de 
 
 \begin{code}
 base k = (1, k+1, 1, 1)
-loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . aux
-       where aux (a,b,c,d) = ((a,b),(c,d))
-             converseAux ((a,b),(c,d)) = (a,b,c,d)
+loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPairs
+       where toPairs (a,b,c,d) = ((a,b),(c,d))
+             fromPairs ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
 
 \subsection*{Problema 4}
@@ -1481,7 +1481,7 @@ loop = converseAux . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . au
 inComp :: (a, (FTree a b, FTree a b)) -> FTree a b
 inComp (a, (b, c)) = Comp a b c
 
-inFTree = either Unit  inComp
+inFTree = either Unit inComp
 
 \end{code}
 
@@ -1523,6 +1523,7 @@ Dedução outFTree:
 \qed
 \end{eqnarray*}
 \begin{code}
+
 outFTree (Unit b) = i1 (b)
 outFTree (Comp a b c) = i2 ((a, (b, c)))
 
@@ -1534,12 +1535,39 @@ hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
+    
+lastSquare :: () -> Square
+lastSquare _ = 1
 
-generatePTree = undefined 
+nextSquare :: Int -> Square
+nextSquare 0 = lastSquare(()) * (2/sqrt(2))
+nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
 
+\end{code}
 
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Nat0|
+           \ar[d]_-{|generatePTree|}^-{|anNat g|}
+           \ar[r]_-{|outNat|}
+&
+    |1 + Nat0|
+          \ar[r]_-{|.......|}
+&
+    |Square + Square * (Nat0 * Nat0)|
+           \ar[d]^-{|id + id * (generatePTree * generatePTree)|}
+\\
+    |PTree|
+          \ar[rr]_-{|outFTree|}
+&
+&
+    |Square + Square * (PTree * PTree)|
+}
+\end{eqnarray*}
 
+\begin{code}
 
+generatePTree = anaFTree ((lastSquare -|- (split (nextSquare) (split id id))) . outNat)
 
 
 mkBranches :: [(Float,Float)] -> ([(Float,Float)],[(Float,Float)])
@@ -1561,15 +1589,56 @@ genSquare s (n) = let (s1,s2) = mkBranches s
 
 drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c)))) 
+<<<<<<< HEAD
+=======
+                        
+>>>>>>> 91e342dcc53a4134d6530fd90fb39b616894c8f7
 
 \end{code}
 
 \subsection*{Problema 5}
 
+Como o \texttt{u} é a função \texttt{singleton}, temos que: |singletonbag :: a -> Bag a|. Esta função teria que, dado um qualquer elemento de um qualquer tipo de dados, transformar esse elemento num \textit{Bag}, assumindo as ocorrências desse elemento como 1.
+O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da \texttt{singletonbag}:
+\begin{eqnarray*}
+\start
+  |singletonbag a = B[(a,1)]|
+%
+\just\equiv{def-comp, def-cons, def-nil}
+%
+  |singletonbag a = B . cons . ((a,1),nil)|
+%
+\just\equiv{def-split, def-one, def-fromIntegral: a função one devolve um Integer e o Bag utiliza Int}
+%
+  |singletonbag a = B . cons . split (id,fromIntegral . one) nil a|
+%
+\just\equiv{def-split}
+  |singletonbag a = B . cons . split (split id (fromIntegral . one)) nil a|
+%
+\just\equiv{Igualdade extensional}
+%
+  |singletonbag = B . cons . split (split id (fromIntegral . one)) nil|
+\qed
+\end{eqnarray*}
+
+Para determinar o |muB| partimos do diagrama:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag A)|
+    \ar[r]^-{|muB|}
+&
+    |Bag A|
+&
+    |A|
+    \ar[l]_-{|u|}
+}
+\end{eqnarray*}
+
 \begin{code}
-singletonbag = undefined
+singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
 muB = undefined
 dist = undefined
+
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
@@ -1890,4 +1959,5 @@ isBalancedFTree = isJust . cataFTree (either (const (Just 0)) g)
 %----------------- Fim do documento -------------------------------------------%
 
 \end{document}
+
 
