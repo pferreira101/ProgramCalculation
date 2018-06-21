@@ -1535,8 +1535,7 @@ hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
-
-generatePTree = undefined 
+    
 
 lastSquare :: () -> Square
 lastSquare _ = 1
