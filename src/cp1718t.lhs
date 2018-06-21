@@ -1536,6 +1536,7 @@ hyloFTree h g = cataFTree h . anaFTree g
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
 
+generatePTree = undefined 
 
 lastSquare :: () -> Square
 lastSquare _ = 1
@@ -1570,7 +1571,28 @@ nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
 
 generatePTree = anaFTree ((lastSquare -|- (split (nextSquare) (split id id))) . outNat)
 
-drawPTree = undefined
+
+mkBranches :: [(Float,Float)] -> ([(Float,Float)],[(Float,Float)])
+mkBranches [a, b, c, d] = let d  = 0.5 <*> (b <+> ( (-1) <*> a))
+                              l1 = d <+> orth d
+                              l2 = orth l1
+                    in
+                      ( [a <+> l2, b <+> (2 <*> l2), a <+> l1, a]
+                      , [a <+> (2 <*> l1), b <+> l1, b, b <+> l2] )
+  where
+    (a, b) <+> (c, d) = (a+c, b+d)
+    n <*> (a, b) = (a*n, b*n)
+    orth (a, b) = (-b, a)
+
+genSquare :: [(Float,Float)] -> Int -> [[(Float,Float)]]
+genSquare s 0 = []
+genSquare s (n) = let (s1,s2) = mkBranches s
+                    in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
+
+drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
+                        in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c)))) 
+                        
+
 \end{code}
 
 \subsection*{Problema 5}
