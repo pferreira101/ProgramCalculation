@@ -1588,12 +1588,7 @@ genSquare s (n) = let (s1,s2) = mkBranches s
                     in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
 
 drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
-                        in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c)))) 
-<<<<<<< HEAD
-=======
-                        
->>>>>>> 91e342dcc53a4134d6530fd90fb39b616894c8f7
-
+                        in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
 \end{code}
 
 \subsection*{Problema 5}
@@ -1633,12 +1628,35 @@ Para determinar o |muB| partimos do diagrama:
     \ar[l]_-{|u|}
 }
 \end{eqnarray*}
+A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Bag a)}, ou seja, tendo \texttt{B[(B[(a,Int)],Int)]}, para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função auxiliar \texttt{parMult} de tipo |parMult :: ([(a,Int)],Int) -> [(a,Int)]| para podermos realizar esta multiplicação.
+
+Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag a)|
+    \ar[d]^-{|unB|}
+    \ar@@/_5.0pc/[ddddd]_-{|muB|}
+\\
+    |[(Bag a, Int)]|
+    \ar[d]^-{|map (split (unB . p1) p2)|}	
+\\
+    |[([(a,Int)],Int)]|
+    \ar[d]^-{|map parMult|}
+\\
+    |[[(a,Int)]]|
+    \ar[d]^-{|concat|}
+\\
+    |[(a,Int)]|
+    \ar[d]^-{|B|}
+\\
+    |Bag a|
+}
+\end{eqnarray*}
 
 \begin{code}
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
-muB = undefined
+muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
 dist = undefined
-
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
