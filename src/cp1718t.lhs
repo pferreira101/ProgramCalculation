@@ -1116,7 +1116,7 @@ uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
 uncurryBlock (a, (b, (c, d))) = Block a b c d
 
 
-inQTree = either ( (uncurry (uncurry Cell)) . assocl )  ( (uncurry  (uncurry (uncurry Block))) . (split (split (id >< p1) (p1 . p2 . p2)) (p2 . p2 . p2) ) )
+inQTree = either uncurryCell uncurryBlock
 
 \end{code}
 
@@ -1214,18 +1214,18 @@ rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
     |QTree A|
            \ar[d]_-{|scaleQTree|}^-{|cataNat g|}
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
-          \ar[d]^{|id + scaleQTree * (scaleQTree * (scaleQTree * scaleQTree))|}
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[d]^{|id + scaleQTree >< (scaleQTree >< (scaleQTree >< scaleQTree))|}
           \ar[l]_-{|in|}
 \\
      |QTree A|
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+    |A * (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[l]_-{|g|}
           \ar[d]^{|id * ((*x) * (*x)) + id|}
 \\
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1245,18 +1245,18 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
     |QTree PixelRGBA8|
            \ar[d]_-{|invertQTree|}^-{|cataNat g|}
 &
-    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
           \ar[d]^-{|id + invertQTree|^|4|}
           \ar[l]_-{|in|}
 \\
      |QTree PixelRGBA8|
 &
-    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
           \ar[l]_-{|g|}
           \ar[d]^{|invertColor + id|}
 \\
 &
-    |PixelRGBA8 * (Int * Int) + (QTree PixelRGBA8)|^|4|
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1287,11 +1287,10 @@ compressQTree x = undefined
     |A * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
           \ar[d]^{|f * id + id|}
 \\
+    |Matrix Bool|
 &
     |Bool * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
           \ar[ul]^-{|in|}
-\\
-    |Matrix Bool|
 }
 \end{eqnarray*}
 
@@ -1571,11 +1570,11 @@ nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Nat0|
-           \ar[d]_-{|generatePTree|}^-{|anNat g|}
+           \ar[d]_-{|generatePTree|}^-{|anaNat g|}
            \ar[r]_-{|outNat|}
 &
     |1 + Nat0|
-          \ar[r]_-{|.......|}
+          \ar[r]_-{|lastSquare + split (nextSquare) (split id id)|}
 &
     |Square + Square * (Nat0 * Nat0)|
            \ar[d]^-{|id + id * (generatePTree * generatePTree)|}
@@ -1653,8 +1652,16 @@ Para determinar o |muB| partimos do diagrama:
 \end{eqnarray*}
 A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Bag a)}, ou seja, tendo \texttt{B[(B[(a,Int)],Int)]}, para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função auxiliar \texttt{parMult} de tipo |parMult :: ([(a,Int)],Int) -> [(a,Int)]| para podermos realizar esta multiplicação.
 
-Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:
-\begin{eqnarray*}
+\begin{code}
+
+parMult :: ([(a,Int)],Int) -> [(a,Int)]
+parMult (_, 0) = []
+parMult ([], _) = []
+parMult ((a, b):t, x) = [(a, b*x)] ++ parMult(t, x)
+
+\end{code}
+
+Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:\begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag a)|
     \ar[d]^-{|unB|}
@@ -1677,9 +1684,11 @@ Pensando desta forma, chegamos à definição de |muB| através do seguinte diag
 \end{eqnarray*}
 
 \begin{code}
+
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
-muB = undefined --B . concat . map parMult . map (split (unB .p1) p2) . unB
+muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
 dist = undefined
+
 \end{code}
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
@@ -1994,13 +2003,6 @@ isBalancedFTree = isJust . cataFTree (either (const (Just 0)) g)
     where
     g (a,(l,r)) = join (liftA2 equal l r)
     equal x y = if x == y then Just (x+1) else Nothing
-
--- * pergunta 5
-
-parMult :: ([(a,Int)],Int) -> [(a,Int)]
-parMult (_,0) = []
-parMult ([],_) = []
-parMult ((a,b):t,x) = [(a,b*x)] ++ parMult(t,x)
 
 \end{code}
 %endif
