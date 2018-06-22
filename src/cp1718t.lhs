@@ -1994,6 +1994,14 @@ isBalancedFTree = isJust . cataFTree (either (const (Just 0)) g)
     where
     g (a,(l,r)) = join (liftA2 equal l r)
     equal x y = if x == y then Just (x+1) else Nothing
+
+-- * pergunta 5
+
+parMult :: ([(a,Int)],Int) -> [(a,Int)]
+parMult (_,0) = []
+parMult ([],_) = []
+parMult ((a,b):t,x) = [(a,b*x)] ++ parMult(t,x)
+
 \end{code}
 %endif
 
