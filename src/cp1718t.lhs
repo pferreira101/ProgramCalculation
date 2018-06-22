@@ -1661,7 +1661,6 @@ A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Ba
 \begin{code}
 
 parMult :: ([(a,Int)],Int) -> [(a,Int)]
-parMult (_, 0) = []
 parMult ([], _) = []
 parMult ((a, b):t, x) = [(a, b*x)] ++ parMult(t, x)
 
@@ -1689,11 +1688,62 @@ Pensando desta forma, chegamos à definição de |muB| através do seguinte diag
 }
 \end{eqnarray*}
 
+Desta maneira, podemos demonstrar as definições de |muB| e de |singletonbag| através das propriedades da multiplicação e da unidade dos Monads, representadas nos testes unitários \textit{test5a} e \textit{test5b} do enunciado, as quais podemos exprimir, respetivamente, com os diagramas que se seguem.
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag a)|
+    \ar[d]_-{|muB|}
+&
+    |Bag(Bag(Bag a))|
+    \ar[l]_-{|muB|}
+    \ar[d]^-{|fmap muB|}
+\\
+    |Bag a|
+&
+    |Bag (Bag a)|
+    \ar[l]^-{|muB|}
+}
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag a)|
+    \ar[d]_-{|muB|}
+&
+    |Bag a|
+    \ar[l]_-{|return|}
+    \ar[dl]^-{|id|}
+\\
+    |Bag a|
+}
+\end{eqnarray*}
+
+O último requisito (não explicitado no enunciado) era definir a função \texttt{dist}, que exprime a distribuição dos elementos de um 
+\textit{Bag}, utilizando o módulo \texttt{Probability}. Ora, para tal, utilizamos a função \texttt{scale} do módulo referido, cujo 
+tipo é |scale :: [(a,Float)] -> Dist a|. Sendo isto exatamente o que nós queríamos, apenas tivemos que converter o segundo elemento 
+(\textit{Int}) dos pares da lista (após o \texttt{unB} de um \textit{Bag}) em \textit{Float} e, para isso, usamos a função predefinida \texttt{fromIntegral}. Assim, com o seguinte diagrama, chegamos à função \texttt{dist}:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag a|
+    \ar[d]_-{|dist|}
+    \ar[r]^-{|unB|}
+&
+    |[(a,Int)]|
+    \ar[d]^-{|map(id >< fromIntegral)|}
+\\
+    |Dist a|
+&
+    |[(a,Float)]|
+    \ar[l]_-{|scale|}
+}
+\end{eqnarray*}
+
+Em suma, definimos as funções, tendo em atenção as justificações apresentadas anteriormente, deste modo:
 \begin{code}
 
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
 muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
-dist = undefined
+dist = Probability.scale . map(id >< fromIntegral) . unB
 
 \end{code}
 
