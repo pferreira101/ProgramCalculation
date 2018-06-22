@@ -1027,18 +1027,18 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
     |Blockchain|
            \ar[d]_-{|allTransactions|}^-{|cataNat g|}
 &
-    |Block + Block * Blockchain|
-          \ar[d]^{|id + id * allTransactions|}
+    |Block + Block >< Blockchain|
+          \ar[d]^{|id + id >< allTransactions|}
           \ar[l]_-{|in|}
 \\
      |Transactions|
 &
-    |Block + Block * Transactions|
-          \ar[l]_-{|[p2 . p2, conc . ((p2 . p2) * id)]|}^-{|g|}
-          \ar[d]^{|(p2 . p2) + (p2 . p2) * id|}
+    |Block + Block >< Transactions|
+          \ar[l]_-{|either (p2 . p2) (conc . ((p2 . p2) >< id))|}^-{|g|}
+          \ar[d]^{|(p2 . p2) + (p2 . p2) >< id|}
 \\
 &
-    |Transactions + Transactions * Transactions|
+    |Transactions + Transactions >< Transactions|
           \ar[ul]^-{|[id, conc]|}
 }
 \end{eqnarray*}
@@ -1080,20 +1080,20 @@ allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
            \ar[d]^-{|allMagicNr|}_-{|cataNat g|}
            \ar@@/_3.0pc/[ddd]_-{|isValidMagicNr|}
 &
-    |Block + Block * Blockchain|
-          \ar[d]^{|id + id * allMagicNr|}
+    |Block + Block >< Blockchain|
+          \ar[d]^{|id + id >< allMagicNr|}
           \ar[l]_-{|in|}
 \\
     |[MagicNr]|
           \ar[dd]^{|allUnique|}
 &
-    |Block + Block * [MagicNr]|
-          \ar[l]_-{|[singl . p1, cons . (p1 * id)]|}^-{|g|}
-          \ar[d]^{|p1 + p1 * id|}
+    |Block + Block >< [MagicNr]|
+          \ar[l]_-{|[singl . p1, cons . (p1 >< id)]|}^-{|g|}
+          \ar[d]^{|p1 + p1 >< id|}
 \\
 &
-    |MagicNr + MagicNr * [MagicNr]|
-          \ar[ul]^-{|[singl, cons]|}
+    |MagicNr + MagicNr >< MagicNr*|
+          \ar[ul]^-{|either singl cons|}
 \\
     |Bool|
 }
@@ -1187,18 +1187,18 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
     |QTree A|
            \ar[d]_-{|rotateQTree|}^-{|cataNat g|}
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
-          \ar[d]^{|id + rotateQTree * (rotateQTree * (rotateQTree * rotateQTree))|}
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[d]^{|id + rotateQTree|^|4|}
           \ar[l]_-{|in|}
 \\
      |QTree A|
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[l]_-{|g|}
           \ar[d]^{|rotateCell + rotateBlock|}
 \\
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1215,14 +1215,14 @@ rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
            \ar[d]_-{|scaleQTree|}^-{|cataNat g|}
 &
     |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
-          \ar[d]^{|id + scaleQTree >< (scaleQTree >< (scaleQTree >< scaleQTree))|}
+          \ar[d]^{|id + scaleQTree|^|4|}
           \ar[l]_-{|in|}
 \\
      |QTree A|
 &
     |A * (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[l]_-{|g|}
-          \ar[d]^{|id * ((*x) * (*x)) + id|}
+          \ar[d]^{|id >< ((*x) >< (*x)) + id|}
 \\
 &
     |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
@@ -1266,8 +1266,14 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 invertQTree = fmap invertColor
 
 
+chopQTree :: (a, Int) -> a
+chopQTree (a, 0) = a
+chopQTree (a, n) = chopQTree (a, n-1)
+
+toTuple x = split (id) ((x-) . depthQTree)
 
 compressQTree x = undefined
+                --cataQTree (inQTree . ((chopQTree >< id) -|- id)) . fmap (split (id) ((x-) . depthQTree))
 
 
 \end{code}
@@ -1277,19 +1283,19 @@ compressQTree x = undefined
     |QTree A|
            \ar[d]_-{|fmap f|}
 &
-    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
-          \ar[d]^{|id + fmap f * (fmap f * (fmap f * fmap f))|}
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[d]^{|id + fmap f >< (fmap f >< (fmap f >< fmap f))|}
           \ar[l]_-{|in|}
 \\
      |QTree Bool|
           \ar[d]^{|qt2bm|}
 &
-    |A * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
+    |A >< (Int >< Int) + QTree Bool >< (QTree Bool >< (QTree Bool >< QTree Bool))|
           \ar[d]^{|f * id + id|}
 \\
     |Matrix Bool|
 &
-    |Bool * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
+    |Bool >< (Int >< Int) + QTree Bool >< (QTree Bool >< (QTree Bool >< QTree Bool))|
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1576,14 +1582,14 @@ nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
     |1 + Nat0|
           \ar[r]_-{|lastSquare + split (nextSquare) (split id id)|}
 &
-    |Square + Square * (Nat0 * Nat0)|
-           \ar[d]^-{|id + id * (generatePTree * generatePTree)|}
+    |Square + Square >< (Nat0 >< Nat0)|
+           \ar[d]^-{|id + id >< (generatePTree >< generatePTree)|}
 \\
     |PTree|
           \ar[rr]_-{|outFTree|}
 &
 &
-    |Square + Square * (PTree * PTree)|
+    |Square + Square >< (PTree >< PTree)|
 }
 \end{eqnarray*}
 
@@ -1667,16 +1673,16 @@ Pensando desta forma, chegamos à definição de |muB| através do seguinte diag
     \ar[d]^-{|unB|}
     \ar@@/_5.0pc/[ddddd]_-{|muB|}
 \\
-    |[(Bag a, Int)]|
+    |(Bag a, Int)*|
     \ar[d]^-{|map (split (unB . p1) p2)|}	
 \\
-    |[([(a,Int)],Int)]|
+    |((a,Int)*,Int)*|
     \ar[d]^-{|map parMult|}
 \\
-    |[[(a,Int)]]|
+    |((a,Int)*)*|
     \ar[d]^-{|concat|}
 \\
-    |[(a,Int)]|
+    |(a,Int)*|
     \ar[d]^-{|B|}
 \\
     |Bag a|
