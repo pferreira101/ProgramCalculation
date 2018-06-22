@@ -1207,10 +1207,6 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 
-
-scaleCell :: Int -> (a, (Int, Int)) -> (a, (Int, Int))
-scaleCell x (a, (b, c)) = (a, (b*x, c*x))
-
 \end{code}
 
 \begin{eqnarray*}
@@ -1226,7 +1222,7 @@ scaleCell x (a, (b, c)) = (a, (b*x, c*x))
 &
     |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
           \ar[l]_-{|g|}
-          \ar[d]^{|scaleCell + id|}
+          \ar[d]^{|id * ((*x) * (*x)) + id|}
 \\
 &
     |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
@@ -1236,7 +1232,7 @@ scaleCell x (a, (b, c)) = (a, (b*x, c*x))
 
 \begin{code}
 
-scaleQTree x = cataQTree (inQTree . ((scaleCell x) -|- id))
+scaleQTree x = cataQTree (inQTree . (id >< ((*x)><(*x)) -|- id))
 
 
 invertColor :: PixelRGBA8 -> PixelRGBA8
@@ -1273,6 +1269,33 @@ invertQTree = fmap invertColor
 
 compressQTree x = undefined
 
+
+\end{code}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+           \ar[d]_-{|fmap f|}
+&
+    |A * (Int * Int) + QTree A * (QTree A * (QTree A * QTree A))|
+          \ar[d]^{|id + fmap f * (fmap f * (fmap f * fmap f))|}
+          \ar[l]_-{|in|}
+\\
+     |QTree Bool|
+          \ar[d]^{|qt2bm|}
+&
+    |A * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
+          \ar[d]^{|f * id + id|}
+\\
+&
+    |Bool * (Int * Int) + QTree Bool * (QTree Bool * (QTree Bool * QTree Bool))|
+          \ar[ul]^-{|in|}
+\\
+    |Matrix Bool|
+}
+\end{eqnarray*}
+
+\begin{code}
 
 
 outlineQTree f = qt2bm . (fmap f)
@@ -1574,21 +1597,21 @@ mkBranches :: [(Float,Float)] -> ([(Float,Float)],[(Float,Float)])
 mkBranches [a, b, c, d] = let d  = 0.5 <*> (b <+> ( (-1) <*> a))
                               l1 = d <+> orth d
                               l2 = orth l1
-                    in
-                      ( [a <+> l2, b <+> (2 <*> l2), a <+> l1, a]
-                      , [a <+> (2 <*> l1), b <+> l1, b, b <+> l2] )
-  where
-    (a, b) <+> (c, d) = (a+c, b+d)
-    n <*> (a, b) = (a*n, b*n)
-    orth (a, b) = (-b, a)
+                          in
+                            ( [a <+> l2, b <+> (2 <*> l2), a <+> l1, a]
+                            , [a <+> (2 <*> l1), b <+> l1, b, b <+> l2] )
+                          where
+                            (a, b) <+> (c, d) = (a+c, b+d)
+                            n <*> (a, b) = (a*n, b*n)
+                            orth (a, b) = (-b, a)
 
 genSquare :: [(Float,Float)] -> Int -> [[(Float,Float)]]
 genSquare s 0 = []
 genSquare s (n) = let (s1,s2) = mkBranches s
-                    in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
+                  in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
 
 drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
-                        in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
+                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
 \end{code}
 
 \subsection*{Problema 5}
@@ -1655,7 +1678,7 @@ Pensando desta forma, chegamos à definição de |muB| através do seguinte diag
 
 \begin{code}
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
-muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
+muB = undefined --B . concat . map parMult . map (split (unB .p1) p2) . unB
 dist = undefined
 \end{code}
 
