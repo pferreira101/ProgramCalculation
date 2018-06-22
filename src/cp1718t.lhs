@@ -974,7 +974,8 @@ outras funções auxiliares que sejam necessárias.
 
 \subsection*{Problema 1}
 
-A nossa abordagem a este problema começou por definirmos o \texttt{in} através da definição do tipo de \textit{Blockchain}, de forma a podermos construir o cataformismo.
+A nossa abordagem a este problema começou por definirmos o \texttt{in} através da definição do tipo de \textit{Blockchain}, de forma 
+a podermos construir o cataformismo.
 \begin{code}
 inBlockchain = either Bc Bcs
 \end{code}
@@ -1009,7 +1010,8 @@ Com o \texttt{in}, foi-nos relativamente simples chegar ao respetivo \texttt{out
 \qed
 \end{eqnarray*}
 
-A partir daqui, com os conhecimentos que possuimos acerca dos combinadores de funções, pudemos definir o \textit{functor}, os catamorfismos, os anamorfismos e os hilomorfismos associados ao tipo \textit{Blockchain}.
+A partir daqui, com os conhecimentos que possuimos acerca dos combinadores de funções, pudemos definir o \textit{functor}, os 
+catamorfismos, os anamorfismos e os hilomorfismos associados ao tipo \textit{Blockchain}.
 
 \begin{code}
 
@@ -1026,7 +1028,8 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 %format (cataList (g)) = "\cata{" g "}"
 %format (cataBlockchain (g)) = "\cata{" g "}"
 
-Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como catamorfismo a função que pretendíamos obter: a \texttt{allTransactions} (pedida no enunciado na questão 1.1).
+Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como catamorfismo a função que pretendíamos obter: a 
+\texttt{allTransactions} (pedida no enunciado na questão 1.1).
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1053,7 +1056,9 @@ Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como 
 allTransactions = cataBlockchain (either (p2 . p2) (conc . ((p2 . p2) >< id)))
 \end{code}
 
-Para respondermos à segunda questão do primeiro problema, isto é, para definirmos a função \texttt{ledger}, recorremos novamente a um diagrama (que apresentamos de seguida). Para além disso, tivemos que definir também duas funções auxiliares, a \texttt{sumTo} e a \texttt{subTo} que adicionam e subtraem, respetivamente, uma transação a um \textit{ledger}.
+Para respondermos à segunda questão do primeiro problema, isto é, para definirmos a função \texttt{ledger}, recorremos novamente a um 
+diagrama (que apresentamos de seguida). Para além disso, tivemos que definir também duas funções auxiliares, a \texttt{sumTo} e a 
+\texttt{subTo} que adicionam e subtraem, respetivamente, uma transação a um \textit{ledger}.
 
 \begin{code}
 sumTo :: Transaction -> Ledger -> Ledger
@@ -1094,7 +1099,8 @@ ledger = cataList (either nil sumsub) . allTransactions
          where sumsub ((o, (v, d)), ledger) = (sumTo (o, (v, d)) (subTo (o, (v, d)) ledger))
 \end{code}
 
-Por último, para a terceira parte do problema (definir a função \texttt{isValidMagicNr}), desenhámos o diagrama e desenvolvemos as funções \texttt{allUnique} e \texttt{allMagicNr}, sendo que esta última foi escrita como um catamorfismo.
+Por último, para a terceira parte do problema (definir a função \texttt{isValidMagicNr}), desenhámos o diagrama e desenvolvemos as 
+funções \texttt{allUnique} e \texttt{allMagicNr}, sendo que esta última foi escrita como um catamorfismo.
 \begin{code}
 allUnique :: Eq a => [a] -> Bool
 allUnique [] = True
