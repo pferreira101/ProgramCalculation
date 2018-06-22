@@ -1147,6 +1147,12 @@ isValidMagicNr = allUnique . allMagicNr
 
 \subsection*{Problema 2}
 
+
+
+Na primeira alínea do segundo problema, foi-nos pedida a definição das funções \texttt{rotateQTree}, \texttt{scaleQTree} e \texttt
+{invertQTree}.
+
+Começamos por definir o \texttt{in} do tipo \textit{QTree}, partindo das seguintes funções por nós criadas para o efeito:
 \begin{code}
 
 uncurryCell :: (a, (Int, Int)) -> QTree a
@@ -1155,12 +1161,16 @@ uncurryCell (a, (b, c)) = Cell a b c
 uncurryBlock :: (QTree a, (QTree a, (QTree a, QTree a))) -> QTree a
 uncurryBlock (a, (b, (c, d))) = Block a b c d
 
+\end{code}
+
+\begin{code}
 
 inQTree = either uncurryCell uncurryBlock
 
 \end{code}
 
-Dedução outQTree:
+
+Com a definição do \texttt{in}, pudemos deduzir o \texttt{out}, recorrendo à propriedade |out . in = id|:
 \begin{eqnarray*}
 \start
   |outQTree . inQTree = id|
@@ -1198,6 +1208,8 @@ Dedução outQTree:
 \qed
 \end{eqnarray*}
 
+Daqui, conseguimos tirar as definições dos combinadores (catamorfismo, anamorfismo e hilomorfismo) associados às \textit{QTrees}, 
+assim como o seu \textit{functor}.
 \begin{code}
 
 outQTree (Cell a b c) = i1 (((a, (b, c))))
@@ -1213,6 +1225,13 @@ hyloQTree h g = cataQTree h . anaQTree g
 instance Functor QTree where
     fmap f = cataQTree (inQTree . ((f >< id) -|- id))
 
+\end{code}
+
+Assim sendo, com esta base já bem construída, procedemos à definição das funções que nos foram pedidas no enunciado. Começámos pela 
+\texttt{rotateQTree} que tem como propósito rodar uma árvore desse tipo (como o próprio nome indica). Para tal, definimos as duas 
+funções auxiliares que se seguem:
+
+\begin{code}
 
 rotateCell :: (a, (Int, Int)) -> (a, (Int, Int))
 rotateCell = id >< swap
@@ -1222,6 +1241,7 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 
 \end{code}
 
+Partindo daqui, conseguimos deduzir a \texttt{rotateQTree} como catamorfismo com o diagrama em baixo apresentado.
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
@@ -1246,8 +1266,10 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 \begin{code}
 
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
-
 \end{code}
+
+Utilizámos também um diagrama para podermos definir a segunda função pedida no enunciado: a \texttt{scaleQTree}, que redimensiona uma 
+\textit{QTree}.
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1270,16 +1292,25 @@ rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 }
 \end{eqnarray*}
 
+Podemos, portanto, defini-la como um catamorfismo:
+
 \begin{code}
 
 scaleQTree x = cataQTree (inQTree . (id >< ((*x)><(*x)) -|- id))
 
+\end{code}
+
+
+Por último (desta primeira alínea), definimos a função \texttt{invertColor} que apresentamos a seguir, que serve de auxiliar à \texttt
+{invertQTree} (que inverte as cores de uma \textit{QTree}).
+\begin{code}
 
 invertColor :: PixelRGBA8 -> PixelRGBA8
 invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 \end{code}
 
+Do mesmo modo que deduzimos as anteriores, vamos também deduzir esta, com a diferença de que a vamos definir com um \texttt{fmap}:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree PixelRGBA8|
@@ -1305,6 +1336,12 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 invertQTree = fmap invertColor
 
+\end{code}
+
+A segunda alínea deste problema pedia-nos que definissemos uma função \texttt{compressQTree}, que comprime uma \textit{quadtree}.
+Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (\texttt{typeQTree, chopQTree}) e de um 
+diagrama.
+\begin{code}
 
 typeQTree :: QTree a -> a
 typeQTree (Cell a b c) = a
@@ -1314,15 +1351,19 @@ chopQTree :: QTree a -> QTree a
 chopQTree (Cell a b c) = Cell a b c
 chopQTree (Block a b c d) =  uncurryCell (typeQTree a, (sizeQTree((Block a b c d))))
 
-
-
 teste = cond ((1==) . p2) (chopQTree . p1) (id . p1)
+
+-- Fazer diagrama aqui, Pedro manda-me foto q eu construo se quiseres
 
 compressQTree x = anaQTree ((recQTree (teste . (split (id) ((x-) . depthQTree)))) . outQTree)
 
-
 \end{code}
 
+
+Por último, na terceira alínea, tivemos que definir a função \texttt{outlineQTree}, que recebe uma função que determina quais os 
+píxeis de fundo e converte uma \textit{QTree} numa matriz monocromática.
+
+Desta forma, temos, então, que:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
@@ -1345,16 +1386,22 @@ compressQTree x = anaQTree ((recQTree (teste . (split (id) ((x-) . depthQTree)))
 }
 \end{eqnarray*}
 
-\begin{code}
+Com o diagrama que desenhamos em cima, pudemos definir a função pretendida recorrendo a um \texttt{fmap} e à \texttt{qt2bm}, cuja 
+definição é-nos dada no próprio enunciado.
 
+\begin{code}
 
 outlineQTree f = qt2bm . (fmap f)
 
-
 \end{code}
 
+
+
 \subsection*{Problema 3}
-Para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split g s| temos primeiro de chegar a versões \textlit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
+
+
+Para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split g s| temos primeiro de chegar a versões 
+\textlit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
 
 \begin{eqnarray*}
 \start
