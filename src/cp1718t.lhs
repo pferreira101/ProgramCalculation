@@ -974,13 +974,13 @@ outras funções auxiliares que sejam necessárias.
 
 \subsection*{Problema 1}
 
-A nossa abordagem a este problema começou por definirmos o \texttt{in} através da definição do tipo de \textit{Blockchain}, de forma 
+A nossa abordagem a este problema começou por definirmos o |in| através da definição do tipo de \textit{Blockchain}, de forma 
 a podermos construir o cataformismo.
 \begin{code}
 inBlockchain = either Bc Bcs
 \end{code}
 
-Com o \texttt{in}, foi-nos relativamente simples chegar ao respetivo \texttt{out}, através da seguinte dedução:
+Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, através da seguinte dedução:
 \begin{eqnarray*}
 \start
   |outBlockchain . inBlockchain = id|
@@ -1056,9 +1056,9 @@ Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como 
 allTransactions = cataBlockchain (either (p2 . p2) (conc . ((p2 . p2) >< id)))
 \end{code}
 
-Para respondermos à segunda questão do primeiro problema, isto é, para definirmos a função \texttt{ledger}, recorremos novamente a um 
-diagrama (que apresentamos de seguida). Para além disso, tivemos que definir também duas funções auxiliares, a \texttt{sumTo} e a 
-\texttt{subTo} que adicionam e subtraem, respetivamente, uma transação a um \textit{ledger}.
+Para respondermos à segunda questão do primeiro problema, isto é, para definirmos a função |ledger|, recorremos novamente a um 
+diagrama (que apresentamos de seguida). Para além disso, tivemos que definir também duas funções auxiliares, a |sumTo| e a 
+|subTo| que adicionam e subtraem, respetivamente, uma transação a um \textit{Ledger}.
 
 \begin{code}
 sumTo :: Transaction -> Ledger -> Ledger
@@ -1099,8 +1099,8 @@ ledger = cataList (either nil sumsub) . allTransactions
          where sumsub ((o, (v, d)), ledger) = (sumTo (o, (v, d)) (subTo (o, (v, d)) ledger))
 \end{code}
 
-Por último, para a terceira parte do problema (definir a função \texttt{isValidMagicNr}), desenhámos o diagrama e desenvolvemos as 
-funções \texttt{allUnique} e \texttt{allMagicNr}, sendo que esta última foi escrita como um catamorfismo.
+Por último, para a terceira parte do problema (definir a função |isValidMagicNr|), desenhámos o diagrama e desenvolvemos as 
+funções |allUnique| e |allMagicNr|, sendo que esta última foi escrita como um catamorfismo.
 \begin{code}
 allUnique :: Eq a => [a] -> Bool
 allUnique [] = True
@@ -1136,7 +1136,7 @@ allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
 }
 \end{eqnarray*}
 
-Assim sendo, pudemos chegar à definição final de \texttt{isValidMagicNr}, utilizando para tal o catamorfismo \texttt{allMagicNr}:
+Assim sendo, pudemos chegar à definição final de |isValidMagicNr|, utilizando para tal o catamorfismo |allMagicNr|:
 
 \begin{code}
 
@@ -1149,10 +1149,9 @@ isValidMagicNr = allUnique . allMagicNr
 
 
 
-Na primeira alínea do segundo problema, foi-nos pedida a definição das funções \texttt{rotateQTree}, \texttt{scaleQTree} e \texttt
-{invertQTree}.
+Na primeira alínea do segundo problema, foi-nos pedida a definição das funções |rotateQTree|, |scaleQTree| e |invertQTree|.
 
-Começamos por definir o \texttt{in} do tipo \textit{QTree}, partindo das seguintes funções por nós criadas para o efeito:
+Começamos por definir o |in| do tipo \textit{QTree}, partindo das seguintes funções por nós criadas para o efeito:
 \begin{code}
 
 uncurryCell :: (a, (Int, Int)) -> QTree a
@@ -1170,7 +1169,7 @@ inQTree = either uncurryCell uncurryBlock
 \end{code}
 
 
-Com a definição do \texttt{in}, pudemos deduzir o \texttt{out}, recorrendo à propriedade |out . in = id|:
+Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |out . in = id|:
 \begin{eqnarray*}
 \start
   |outQTree . inQTree = id|
@@ -1228,7 +1227,7 @@ instance Functor QTree where
 \end{code}
 
 Assim sendo, com esta base já bem construída, procedemos à definição das funções que nos foram pedidas no enunciado. Começámos pela 
-\texttt{rotateQTree} que tem como propósito rodar uma árvore desse tipo (como o próprio nome indica). Para tal, definimos as duas 
+|rotateQTree| que tem como propósito rodar uma árvore desse tipo (como o próprio nome indica). Para tal, definimos as duas 
 funções auxiliares que se seguem:
 
 \begin{code}
@@ -1241,7 +1240,7 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 
 \end{code}
 
-Partindo daqui, conseguimos deduzir a \texttt{rotateQTree} como catamorfismo com o diagrama em baixo apresentado.
+Partindo daqui, conseguimos deduzir a |rotateQTree| como catamorfismo com o diagrama em baixo apresentado.
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
@@ -1268,7 +1267,7 @@ Partindo daqui, conseguimos deduzir a \texttt{rotateQTree} como catamorfismo com
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
 \end{code}
 
-Utilizámos também um diagrama para podermos definir a segunda função pedida no enunciado: a \texttt{scaleQTree}, que redimensiona uma 
+Utilizámos também um diagrama para podermos definir a segunda função pedida no enunciado: a |scaleQTree|, que redimensiona uma 
 \textit{QTree}.
 
 \begin{eqnarray*}
@@ -1301,8 +1300,8 @@ scaleQTree x = cataQTree (inQTree . (id >< ((*x)><(*x)) -|- id))
 \end{code}
 
 
-Por último (desta primeira alínea), definimos a função \texttt{invertColor} que apresentamos a seguir, que serve de auxiliar à \texttt
-{invertQTree} (que inverte as cores de uma \textit{QTree}).
+Por último (desta primeira alínea), definimos a função |invertColor| que apresentamos a seguir, que serve de auxiliar à |invertQTree| 
+(que inverte as cores de uma \textit{QTree}).
 \begin{code}
 
 invertColor :: PixelRGBA8 -> PixelRGBA8
@@ -1310,7 +1309,7 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 \end{code}
 
-Do mesmo modo que deduzimos as anteriores, vamos também deduzir esta, com a diferença de que a vamos definir com um \texttt{fmap}:
+Do mesmo modo que deduzimos as anteriores, vamos também deduzir esta, com a diferença de que a vamos definir com um |fmap|:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree PixelRGBA8|
@@ -1338,8 +1337,8 @@ invertQTree = fmap invertColor
 
 \end{code}
 
-A segunda alínea deste problema pedia-nos que definissemos uma função \texttt{compressQTree}, que comprime uma \textit{quadtree}.
-Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (\texttt{typeQTree, chopQTree}) e de um 
+A segunda alínea deste problema pedia-nos que definissemos uma função |compressQTree|, que comprime uma \textit{quadtree}.
+Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (|typeQTree| e |chopQTree|) e de um 
 diagrama.
 \begin{code}
 
@@ -1360,7 +1359,7 @@ compressQTree x = anaQTree ((recQTree (teste . (split (id) ((x-) . depthQTree)))
 \end{code}
 
 
-Por último, na terceira alínea, tivemos que definir a função \texttt{outlineQTree}, que recebe uma função que determina quais os 
+Por último, na terceira alínea, tivemos que definir a função |outlineQTree|, que recebe uma função que determina quais os 
 píxeis de fundo e converte uma \textit{QTree} numa matriz monocromática.
 
 Desta forma, temos, então, que:
@@ -1386,7 +1385,7 @@ Desta forma, temos, então, que:
 }
 \end{eqnarray*}
 
-Com o diagrama que desenhamos em cima, pudemos definir a função pretendida recorrendo a um \texttt{fmap} e à \texttt{qt2bm}, cuja 
+Com o diagrama que desenhamos em cima, pudemos definir a função pretendida recorrendo a um |fmap| e à |qt2bm|, cuja 
 definição é-nos dada no próprio enunciado.
 
 \begin{code}
@@ -1399,8 +1398,11 @@ outlineQTree f = qt2bm . (fmap f)
 
 \subsection*{Problema 3}
 
+O problema 3 consistia em aplicar a lei da recursividade múltipla e a lei de "banana-split" para derivar duas 
+funções auxiliares: |base k| e |loop|.
 
-Para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split g s| temos primeiro de chegar a versões 
+
+Ora, para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split g s| temos primeiro de chegar a versões 
 \textlit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
 
 \begin{eqnarray*}
@@ -1421,7 +1423,7 @@ Para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e 
   )|
 \end{eqnarray*}
 
-Cálculo da versão \texlit{pointfree} de |f k| pretendida:
+Podemos então calcular a versão \texlit{pointfree} de |f k| pretendida:
 
 \begin{eqnarray*}
 \start
@@ -1448,7 +1450,7 @@ Cálculo da versão \texlit{pointfree} de |f k| pretendida:
   |(f k) . in  = (either (const 1) mul) . fF (split (f k) (l k))|
 \end{eqnarray*}
 
-Cálcudo da versão de l k pretendida:
+E, depois, calcular a versão de |l k| que queremos:
 
 \begin{eqnarray*}
 \start
@@ -1471,7 +1473,7 @@ Cálcudo da versão de l k pretendida:
   |(l k) . in = (either (const (k+1)) (succ . p2)) . fF (split (f k) (l k))|
 \end{eqnarray*}
 
-Cálculo da versão de g pretendida:
+Com isto, podemos derivar |g| da seguinte forma:
 
 \begin{eqnarray*}
 \start
@@ -1490,7 +1492,7 @@ Cálculo da versão de g pretendida:
   |g . in = (either (const 1) mul) . fF (split g s)|
 \end{eqnarray*}
 
-Cálculo da versão de s pretendida:
+E obter |s|:
 
 \begin{eqnarray*}
 \start
@@ -1513,7 +1515,7 @@ Cálculo da versão de s pretendida:
   |s . in = (either (const 1) (succ . p2)) . fF (split g s)|
 \end{eqnarray*}
 
-Assim, temos o seguinte par de sistema de equações:
+Assim, temos o seguinte par de sistemas de equações:
 
 \begin{eqnarray*}
 \start
@@ -1584,7 +1586,9 @@ Podemos ainda simplificar a função m, como se demonstra de seguida.
   |m = (split mul (succ . p2)) >< (split mul (succ . p2))| 
 \end{eqnarray*}
 
-Para chegarmos a implementações corretas das funções base k e loop temos de ter atenção ao tipo das mesmas. A função loop recebe como argumento um 4-tuplo |(Nat0, Nat0, Nat0, Nat0)| e produz um valor do mesmo tipo. A função m recebe e produz um valor do tipo |((Nat0, Nat0) , (Nat0, Nat0))|. Deste modo, surgem as seguintes implementações para base k e loop:
+Para chegarmos a implementações corretas das funções |base k| e |loop| temos de ter atenção ao tipo das mesmas. A função |loop| 
+recebe como argumento um 4-tuplo |(Nat0, Nat0, Nat0, Nat0)| e produz um valor do mesmo tipo. A função |m| recebe e produz um valor do 
+tipo |((Nat0, Nat0) , (Nat0, Nat0))|. Deste modo, surgem as seguintes implementações para |base k| e |loop|:
 
 \begin{code}
 base k = (1, k+1, 1, 1)
@@ -1593,7 +1597,13 @@ loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPa
              fromPairs ((a,b),(c,d)) = (a,b,c,d)
 \end{code}
 
+
+
+
 \subsection*{Problema 4}
+
+
+
 
 \begin{code}
 
@@ -1713,9 +1723,15 @@ drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
 
 \subsection*{Problema 5}
 
-Como o \texttt{u} é a função \texttt{singleton}, temos que: |singletonbag :: a -> Bag a|. Esta função teria que, dado um qualquer 
-elemento de um qualquer tipo de dados, transformar esse elemento num \textit{Bag}, assumindo as ocorrências desse elemento como 1.
-O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da \texttt{singletonbag}:
+O problema 5 deste projeto consistia em, dado um tipo de dados \textit{Bag}, definir as funções |muB|, 
+|singletonbag| (que corresponde à função |return|) e |dist|, que calcula a distribuição probabilística de um \textit
+{Bag}. Começamos por definir a segunda função enunciada.
+
+
+Como a |return| é a função |singletonbag|, temos que: |singletonbag :: a -> Bag a|. Esta função teria que, dado um 
+qualquer elemento de um qualquer tipo de dados, transformar esse elemento num \textit{Bag}, assumindo as ocorrências desse elemento 
+como 1.
+O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da |singletonbag|:
 
 \begin{eqnarray*}
 \start
@@ -1756,7 +1772,7 @@ A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Ba
 para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior 
 pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os 
 elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função 
-auxiliar \texttt{parMult} de tipo |parMult :: ([(a,Int)],Int) -> [(a,Int)]| para podermos realizar esta multiplicação.
+auxiliar |parMult|, de tipo |([(a,Int)],Int) -> [(a,Int)]|, para podermos realizar esta multiplicação.
 
 \begin{code}
 parMult :: ([(a,Int)],Int) -> [(a,Int)]
@@ -1821,11 +1837,11 @@ respetivamente, com os diagramas que se seguem.
 }
 \end{eqnarray*}
 
-O último requisito (não explicitado no enunciado) era definir a função \texttt{dist}, que exprime a distribuição dos elementos de um 
+O último requisito (não explicitado no enunciado) era definir a função |dist|, que exprime a distribuição dos elementos de um 
 \textit{Bag}, utilizando o módulo \texttt{Probability}. Ora, para tal, utilizamos a função \texttt{scale} do módulo referido, cujo 
 tipo é |scale :: [(a,Float)] -> Dist a|. Sendo isto exatamente o que nós queríamos, apenas tivemos que converter o segundo elemento 
-(\textit{Int}) dos pares da lista (após o \texttt{unB} de um \textit{Bag}) em \textit{Float} e, para isso, usamos a função 
-predefinida \texttt{fromIntegral}. Assim, com o seguinte diagrama, chegamos à função \texttt{dist}:
+(\textit{Int}) dos pares da lista (após o |unB| de um \textit{Bag}) em \textit{Float} e, para isso, usamos a função 
+predefinida |fromIntegral|. Assim, com o seguinte diagrama, chegamos à função |dist|:
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
