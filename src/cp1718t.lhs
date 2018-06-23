@@ -1591,10 +1591,12 @@ recebe como argumento um 4-tuplo |(Nat0, Nat0, Nat0, Nat0)| e produz um valor do
 tipo |((Nat0, Nat0) , (Nat0, Nat0))|. Deste modo, surgem as seguintes implementações para |base k| e |loop|:
 
 \begin{code}
+
 base k = (1, k+1, 1, 1)
 loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPairs
        where toPairs (a,b,c,d) = ((a,b),(c,d))
              fromPairs ((a,b),(c,d)) = (a,b,c,d)
+
 \end{code}
 
 
@@ -1603,10 +1605,13 @@ loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPa
 \subsection*{Problema 4}
 
 
+No problema 4, são-nos dados três novos tipos de dados: as \textit{FTree}, as \textit{PTree} e os \textit{Square}. A partir daqui, 
+tínhamos que definir, a primeira alínea, a função |generatePTree| como um anamorfismo e, na segunda alínea, a função |drawPTree|.
 
+
+Para tal, começamos mais uma vez por definir o |in| das \textit{FTree} e, daí, deduzir o seu |out|.
 
 \begin{code}
-
 
 inComp :: (a, (FTree a b, FTree a b)) -> FTree a b
 inComp (a, (b, c)) = Comp a b c
@@ -1652,6 +1657,9 @@ Dedução outFTree:
   )|
 \qed
 \end{eqnarray*}
+
+Com o |out| definido, foi-nos possível definir também os combinadores associados às \textit{FTrees}, assim como o seu 
+\textit{bifunctor}:
 \begin{code}
 
 outFTree (Unit b) = i1 (b)
@@ -1665,7 +1673,12 @@ hyloFTree h g = cataFTree h . anaFTree g
 
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
-    
+
+\end{code}
+
+Para resolvermos a primeira alínea deste problema, começamos por definir as seguintes funções auxiliares:
+
+\begin{code}    
 lastSquare :: () -> Square
 lastSquare _ = 1
 
@@ -1674,6 +1687,8 @@ nextSquare 0 = lastSquare(()) * (2/sqrt(2))
 nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
 
 \end{code}
+
+Com estas funções, foi-nos possível desenhar o diagrama que nos permitiu deduzir a |generatePTree| como um anamorfismo:
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1695,10 +1710,26 @@ nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
 }
 \end{eqnarray*}
 
+Temos, então, que:
+
 \begin{code}
 
 generatePTree = anaFTree ((lastSquare -|- (split (nextSquare) (split id id))) . outNat)
 
+\end{code}
+
+???????????????????????????????????????????
+
+???????????????????????????????????????????
+
+EXPLICAR A DRAWPTREE OU ENTÃO O QUE FALHOU
+
+???????????????????????????????????????????
+
+???????????????????????????????????????????
+
+
+\begin{code}
 
 mkBranches :: [(Float,Float)] -> ([(Float,Float)],[(Float,Float)])
 mkBranches [a, b, c, d] = let d  = 0.5 <*> (b <+> ( (-1) <*> a))
@@ -1717,11 +1748,24 @@ genSquare s 0 = []
 genSquare s (n) = let (s1,s2) = mkBranches s
                   in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
 
-drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
-                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
 \end{code}
 
+Assim, podemos então definir a |drawPTree| da seguinte maneira:
+
+\begin{code}
+
+drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
+                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
+
+\end{code}
+
+
+
+
 \subsection*{Problema 5}
+
+
+
 
 O problema 5 deste projeto consistia em, dado um tipo de dados \textit{Bag}, definir as funções |muB|, 
 |singletonbag| (que corresponde à função |return|) e |dist|, que calcula a distribuição probabilística de um \textit
