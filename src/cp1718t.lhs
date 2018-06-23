@@ -967,17 +967,16 @@ consolidate = B . consol . unB
 %----------------- Soluções dos alunos -----------------------------------------%
 
 \section{Soluções dos alunos}\label{sec:resolucao}
-Os alunos devem colocar neste anexo as suas soluções aos exercícios
-propostos, de acordo com o ``layout'' que se fornece. Não podem ser
-alterados os nomes ou tipos das funções dadas, mas pode ser adicionado texto e / ou 
-outras funções auxiliares que sejam necessárias.
 
 \subsection*{Problema 1}
 
 A nossa abordagem a este problema começou por definirmos o |in| através da definição do tipo de \textit{Blockchain}, de forma 
 a podermos construir o cataformismo.
+
 \begin{code}
+
 inBlockchain = either Bc Bcs
+
 \end{code}
 
 Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, através da seguinte dedução:
@@ -985,22 +984,22 @@ Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, atra
 \start
   |outBlockchain . inBlockchain = id|
 %
-\just\equiv{inBlockchain; Reflexão-+}
+\just\equiv{ Def-inBlockchain , Reflexão-+ }
 %
   |outBlockchain . either (Bc) (Bcs) = either (i1) (i2)|
 %
-\just\equiv{Fusão-+}
+\just\equiv{ Fusão-+ }
 %
   |either (outBlockchain . Bc) (outBlockchain . Bcs) = either (i1) (i2)|
 %
-\just\equiv{Eq-+}
+\just\equiv{ Eq-+ }
         |lcbr(
     outBlockchain . Bc = i1
   )(
     outBlockchain . Bcs = i2
   )|
 %
-\just\equiv{Igualdade extensional; Def-comp}
+\just\equiv{ Igualdade extensional , Def-comp }
 %
         |lcbr(
     outBlockchain (Bc b) = i1 b
@@ -1010,13 +1009,18 @@ Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, atra
 \qed
 \end{eqnarray*}
 
-A partir daqui, com os conhecimentos que possuimos acerca dos combinadores de funções, pudemos definir o \textit{functor}, os 
-catamorfismos, os anamorfismos e os hilomorfismos associados ao tipo \textit{Blockchain}.
-
 \begin{code}
 
 outBlockchain (Bc b) = i1 b
 outBlockchain (Bcs bs) = i2 bs
+
+\end{code}
+
+A partir daqui, com os conhecimentos que possuímos acerca dos combinadores de funções, pudemos definir o \textit{functor}, os 
+catamorfismos, os anamorfismos e os hilomorfismos associados ao tipo \textit{Blockchain}.
+
+
+\begin{code}
 
 recBlockchain f = id -|- id >< f
 cataBlockchain g = g . recBlockchain (cataBlockchain g) . outBlockchain
@@ -1028,13 +1032,13 @@ hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 %format (cataList (g)) = "\cata{" g "}"
 %format (cataBlockchain (g)) = "\cata{" g "}"
 
-Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como catamorfismo a função que pretendíamos obter: a 
-\texttt{allTransactions} (pedida no enunciado na questão 1.1).
+Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como catamorfismo a função que pretendíamos obter: 
+\texttt{allTransactions}.
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Blockchain|
-           \ar[d]_-{|allTransactions|}^-{|cataNat g|}
+           \ar[d]_-{|allTransactions|}^-{|cataBlockchain g|}
 &
     |Block + Block >< Blockchain|
           \ar[d]^{|id + id >< allTransactions|}
@@ -1053,7 +1057,9 @@ Recorrendo ao diagrama que apresentamos a seguir, definimos com facilidade como 
 \end{eqnarray*}
 
 \begin{code}
+
 allTransactions = cataBlockchain (either (p2 . p2) (conc . ((p2 . p2) >< id)))
+
 \end{code}
 
 Para respondermos à segunda questão do primeiro problema, isto é, para definirmos a função |ledger|, recorremos novamente a um 
@@ -1061,54 +1067,62 @@ diagrama (que apresentamos de seguida). Para além disso, tivemos que definir ta
 |subTo| que adicionam e subtraem, respetivamente, uma transação a um \textit{Ledger}.
 
 \begin{code}
+
 sumTo :: Transaction -> Ledger -> Ledger
 sumTo (o, (v, d)) [] = [(d, v)]
 sumTo (o, (v, d)) ((e, val):t) = if (d == e) then (e, val + v):t
                                              else (e, val):sumTo (o, (v, d)) t
+
 \end{code}
 
 \begin{code}
+
 subTo :: Transaction -> Ledger -> Ledger
 subTo (o, (v, d)) [] = [(o, -v)]
 subTo (o, (v, d)) ((e, val):t) = if (o == e) then (e, val - v):t
                                              else (e, val):subTo (o, (v, d)) t
+
 \end{code}
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Blockchain|
-          \ar@@/_10.0pc/[dd]_-{|ledger|}
-	  \ar[d]_-{|allTransactions|}
+          \ar@@/_3.0pc/[dd]_-{|ledger|}
+	        \ar[d]^-{|allTransactions|}
 \\
     |Transactions|
           \ar[r]^-{|in|}
-          \ar[d]_-{|cataList (either nil sumsub)|}
+          \ar[d]^-{|cataList (either nil sumsub)|}
 &
-     |1+Transactions><Transactions*|
-     \ar[d]^-{|id+id><cataList(either nil sumsub)|}
+     |1 + Transactions >< Transactions|^*
+     \ar[d]^-{|id + id >< cataList (either nil sumsub)|}
 \\
     |Ledger|
 &
-    |1+Transactions><Ledger*|
+    |1 + Transactions >< Ledger|^*
           \ar[l]^-{|either nil sumsub|}
 }
 \end{eqnarray*}
 
 \begin{code}
+
 ledger = cataList (either nil sumsub) . allTransactions
          where sumsub ((o, (v, d)), ledger) = (sumTo (o, (v, d)) (subTo (o, (v, d)) ledger))
+
 \end{code}
 
 Por último, para a terceira parte do problema (definir a função |isValidMagicNr|), desenhámos o diagrama e desenvolvemos as 
 funções |allUnique| e |allMagicNr|, sendo que esta última foi escrita como um catamorfismo.
 \begin{code}
+
 allUnique :: Eq a => [a] -> Bool
 allUnique [] = True
 allUnique (h:t) = if elem h t then False
                               else allUnique t
 
-allMagicNr :: Blockchain -> [[Char]]
+allMagicNr :: Blockchain -> [MagicNo]
 allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
+
 \end{code}
 
 \begin{eqnarray*}
@@ -1121,15 +1135,15 @@ allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
           \ar[d]^{|id + id >< allMagicNr|}
           \ar[l]_-{|in|}
 \\
-    |[MagicNr]|
+    |MagicNr|^*
           \ar[dd]^{|allUnique|}
 &
-    |Block + Block >< [MagicNr]|
+    |Block + Block >< MagicNr|^*
           \ar[l]_-{|[singl . p1, cons . (p1 >< id)]|}^-{|g|}
           \ar[d]^{|p1 + p1 >< id|}
 \\
 &
-    |MagicNr + MagicNr >< MagicNr*|
+    |MagicNr + MagicNr >< MagicNr|^*
           \ar[ul]^-{|either singl cons|}
 \\
     |Bool|
@@ -1168,13 +1182,15 @@ inQTree = either uncurryCell uncurryBlock
 
 \end{code}
 
+A seguinte versão |inQTree = either ((uncurry (uncurry Cell)) . assocl)  (uncurry  (uncurry (uncurry Block)) . (split (split (id >< p1) (p1 . p2 . p2)) (p2 . p2 . p2)))| também é válida, porém é demasiado extensa e a sua compreensão não é fácil, assim como a elevada dificuldade no seu manuseamento no cálculo a seguir apresentado, pelo que o grupo optou pela versão anterior, apesar de ser pointwise.
+
 
 Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |out . in = id|:
 \begin{eqnarray*}
 \start
   |outQTree . inQTree = id|
 %
-\just\equiv{inQTree; Reflexão-+}
+\just\equiv{Def-inQTree , Reflexão-+}
 %
   |outQTree . either (uncurryCell) (uncurryBlock) = either (i1) (i2)|
 %
@@ -1189,7 +1205,7 @@ Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |o
     outQTree . uncurryBlock = i2
   )|
 %
-\just\equiv{Igualdade extensional; Def-comp}
+\just\equiv{Igualdade extensional , Def-comp}
 %
         |lcbr(
     outQTree (uncurryCell (a, (b, c))) = i1 (a, (b, c))
@@ -1197,7 +1213,7 @@ Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |o
     outQTree (uncurryBlock (a, (b, (c, d)))) = i2 (a, (b, (c, d)))
   )|
 %
-\just\equiv{uncurryCell; uncurryBlock}
+\just\equiv{Def-uncurryCell , Def-uncurryBlock}
 %
         |lcbr(
     outQTree (Cell a b c) = i1 (a, (b, c))
@@ -1207,28 +1223,78 @@ Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |o
 \qed
 \end{eqnarray*}
 
-Daqui, conseguimos tirar as definições dos combinadores (catamorfismo, anamorfismo e hilomorfismo) associados às \textit{QTrees}, 
-assim como o seu \textit{functor}.
+
 \begin{code}
 
 outQTree (Cell a b c) = i1 (((a, (b, c))))
 outQTree (Block a b c d) = i2 ((a, (b, (c, d))))
 
+\end{code}
+
+Através do seguinte digrama podemos deduzir a função |baseQTree| e consequentemente a função |recQTree|:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+          \ar[d]^-{|baseQTree f g|}
+          \ar[r]^-{|out|}
+&
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[d]^{|f >< id + g >< (g >< (g >< g))|}
+\\
+    |QTree A|
+&
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[l]_-{|in|}
+}
+\end{eqnarray*}
+
+\begin{code}
+
 baseQTree f g = (f >< id) -|- (g >< (g >< (g >< g)))
-recQTree f = id -|- (f >< (f >< (f >< f)))
+recQTree f = baseQTree id f
 cataQTree g = g . recQTree (cataQTree g) . outQTree   
 anaQTree g = inQTree . recQTree (anaQTree g) . g
 hyloQTree h g = cataQTree h . anaQTree g
 
+\end{code}
+
+
+O functor associado ao tipo QTree pode ser deduzido através do diagrama:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+           \ar[d]_-{|fmap f|}
+&
+    |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
+          \ar[d]^{|id + fmap f >< (fmap f >< (fmap f >< fmap f))|}
+          \ar[l]_-{|in|}
+\\
+     |QTree B|
+&
+    |A >< (Int >< Int) + QTree B >< (QTree B >< (QTree B >< QTree B))|
+          \ar[d]^{|f >< id + id|}
+\\
+&
+    |B >< (Int >< Int) + QTree B >< (QTree B >< (QTree B >< QTree B))|
+          \ar[ul]^-{|in|}
+}
+\end{eqnarray*}
+
+%format (cataQTree (g)) = "\cata{" g "}"
+%format (anaQTree (g)) = "\ana{" g "}"
+
+\begin{code}
 
 instance Functor QTree where
     fmap f = cataQTree (inQTree . ((f >< id) -|- id))
 
 \end{code}
 
+
 Assim sendo, com esta base já bem construída, procedemos à definição das funções que nos foram pedidas no enunciado. Começámos pela 
-|rotateQTree| que tem como propósito rodar uma árvore desse tipo (como o próprio nome indica). Para tal, definimos as duas 
-funções auxiliares que se seguem:
+|rotateQTree| que tem como propósito rodar. Para tal, definimos as duas funções auxiliares que se seguem:
 
 \begin{code}
 
@@ -1241,13 +1307,14 @@ rotateBlock (a, (b, (c, d))) = (c, (a, (d, b)))
 \end{code}
 
 Partindo daqui, conseguimos deduzir a |rotateQTree| como catamorfismo com o diagrama em baixo apresentado.
+
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
-           \ar[d]_-{|rotateQTree|}^-{|cataNat g|}
+           \ar[d]^-{|rotateQTree|}_-{|cataQTree g|}
 &
     |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
-          \ar[d]^{|id + rotateQTree|^|4|}
+          \ar[d]^{|id + rotateQTree|^4}
           \ar[l]_-{|in|}
 \\
      |QTree A|
@@ -1265,18 +1332,19 @@ Partindo daqui, conseguimos deduzir a |rotateQTree| como catamorfismo com o diag
 \begin{code}
 
 rotateQTree = cataQTree (inQTree . (rotateCell -|- rotateBlock))
+
 \end{code}
 
-Utilizámos também um diagrama para podermos definir a segunda função pedida no enunciado: a |scaleQTree|, que redimensiona uma 
+Utilizámos também um diagrama para podermos definir a segunda função pedida no enunciado, |scaleQTree|, que redimensiona uma 
 \textit{QTree}.
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
-           \ar[d]_-{|scaleQTree|}^-{|cataNat g|}
+           \ar[d]^-{|scaleQTree|}_-{|cataQTree g|}
 &
     |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
-          \ar[d]^{|id + scaleQTree|^|4|}
+          \ar[d]^{|id + scaleQTree|^4}
           \ar[l]_-{|in|}
 \\
      |QTree A|
@@ -1309,24 +1377,25 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 \end{code}
 
-Do mesmo modo que deduzimos as anteriores, vamos também deduzir esta, com a diferença de que a vamos definir com um |fmap|:
+Do mesmo modo que deduzimos as anteriores, deduzimos também esta:
+
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree PixelRGBA8|
-           \ar[d]_-{|invertQTree|}^-{|cataNat g|}
+           \ar[d]^-{|invertQTree|}_-{|cataQTree g|}
 &
-    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
-          \ar[d]^-{|id + invertQTree|^|4|}
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^4
+          \ar[d]^-{|id + invertQTree|^4}
           \ar[l]_-{|in|}
 \\
      |QTree PixelRGBA8|
 &
-    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^4
           \ar[l]_-{|g|}
-          \ar[d]^{|invertColor + id|}
+          \ar[d]^{|invertColor >< id + id|}
 \\
 &
-    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^|4|
+    |PixelRGBA8 >< (Int >< Int) + (QTree PixelRGBA8)|^4
           \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
@@ -1337,9 +1406,8 @@ invertQTree = fmap invertColor
 
 \end{code}
 
-A segunda alínea deste problema pedia-nos que definissemos uma função |compressQTree|, que comprime uma \textit{quadtree}.
-Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (|typeQTree| e |chopQTree|) e de um 
-diagrama.
+A segunda alínea deste problema pedia-nos que definissemos uma função |compressQTree|, que comprime uma \textit{QTree}.
+Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (|typeQTree| e |chopQTree|).
 \begin{code}
 
 typeQTree :: QTree a -> a
@@ -1363,30 +1431,33 @@ Por último, na terceira alínea, tivemos que definir a função |outlineQTree|,
 píxeis de fundo e converte uma \textit{QTree} numa matriz monocromática.
 
 Desta forma, temos, então, que:
+
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree A|
-           \ar[d]_-{|fmap f|}
+          \ar[d]^-{|fmap f|}
+          \ar@@/_3.0pc/[ddd]_-{|outline|}
 &
     |A >< (Int >< Int) + QTree A >< (QTree A >< (QTree A >< QTree A))|
           \ar[d]^{|id + fmap f >< (fmap f >< (fmap f >< fmap f))|}
           \ar[l]_-{|in|}
 \\
      |QTree Bool|
-          \ar[d]^{|qt2bm|}
+          \ar[dd]^-{|qt2bm|}
 &
-    |A >< (Int >< Int) + QTree Bool >< (QTree Bool >< (QTree Bool >< QTree Bool))|
-          \ar[d]^{|f * id + id|}
+    |A >< (Int >< Int) + (QTree Bool)|^4
+          \ar[d]^{|f >< id + id|}
+\\
+&
+    |Bool >< (Int >< Int) + (QTree Bool)|^4
+          \ar[ul]^-{|in|}
 \\
     |Matrix Bool|
-&
-    |Bool >< (Int >< Int) + QTree Bool >< (QTree Bool >< (QTree Bool >< QTree Bool))|
-          \ar[ul]^-{|in|}
 }
 \end{eqnarray*}
 
-Com o diagrama que desenhamos em cima, pudemos definir a função pretendida recorrendo a um |fmap| e à |qt2bm|, cuja 
-definição é-nos dada no próprio enunciado.
+Com o diagrama que desenhamos em cima, pudemos definir a função pretendida recorrendo à função |qt2bm|, cuja 
+definição é-nos dada no próprio enunciado:
 
 \begin{code}
 
@@ -1403,7 +1474,7 @@ funções auxiliares: |base k| e |loop|.
 
 
 Ora, para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)|  e  |split g s| temos primeiro de chegar a versões 
-\textlit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
+\textit{pointfree} dessas funções, com as quais seja possível construir os segintes sistemas de equações:
 
 \begin{eqnarray*}
 \start
@@ -1423,7 +1494,7 @@ Ora, para podermos aplicar a lei da recursividade múltipla a |split (f k) (l k)
   )|
 \end{eqnarray*}
 
-Podemos então calcular a versão \texlit{pointfree} de |f k| pretendida:
+Podemos então calcular a versão \textit{pointfree} de |f k| pretendida:
 
 \begin{eqnarray*}
 \start
@@ -1433,7 +1504,9 @@ Podemos então calcular a versão \texlit{pointfree} de |f k| pretendida:
     f k (d+1) = l k d * f k d
   )|
 %
-\just\equiv{ Igualdade extensional (73), Def-const (76), Definição de succ, Def-comp (74), Def-split (78), Definição de mul, Comutatividade da multiplicação }
+\just\equiv{ \begin{tabular} 
+                \\ Igualdade extensional (73) , Def-const (76) , Def-succ , Def-comp (74) , \\ Def-split (78) , Def-mul , Comutatividade da multiplicação 
+              \end{tabular}}
 %
         |lcbr(
     (f k) . (const 0) = (const 1)
@@ -1441,11 +1514,11 @@ Podemos então calcular a versão \texlit{pointfree} de |f k| pretendida:
     (f k) . succ = mul . (split (f k) (l k))
   )|
 %
-\just\equiv{ in = |either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+\just\equiv{ in = |either (const 0) succ| , Eq-+ (27) , Fusão-+ (20) }
 %
   |(f k) . in  = either (const 1) (mul . (split (f k) (l k)))|
 %
-\just\equiv{ Natural-id (1), Absorção-+ (22), |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
+\just\equiv{ Natural-id (1) , Absorção-+ (22) , |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
 %
   |(f k) . in  = (either (const 1) mul) . fF (split (f k) (l k))|
 \end{eqnarray*}
@@ -1460,7 +1533,9 @@ E, depois, calcular a versão de |l k| que queremos:
     l k (d+1) = l k d + 1
   )|
 %
-\just\equiv{ Igualdade extensional (73), Def-const (76), Def-comp (74), Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+\just\equiv{ \begin{tabular}
+                \\ Igualdade extensional (73) , Def-const (76) , Def-comp (74) , \\ Def-succ, |in = either (const 0) succ|, Eq-+ (27) , Fusão-+ (20)
+              \end{tabular}}
 %
   |(l k) . in = either (const (k+1)) (succ . (l k))|
 %
@@ -1468,7 +1543,7 @@ E, depois, calcular a versão de |l k| que queremos:
 %
   |(l k) . in = either (const (k+1)) (succ . p2 . (split (fk) (l k)))|
 %
-\just\equiv{ Absorção-+ (22), Natural-id (1), |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
+\just\equiv{ Absorção-+ (22) , Natural-id (1) , |fF (split (f k) (l k)) = id + (split (f k) (l k))| }
 %
   |(l k) . in = (either (const (k+1)) (succ . p2)) . fF (split (f k) (l k))|
 \end{eqnarray*}
@@ -1483,11 +1558,13 @@ Com isto, podemos derivar |g| da seguinte forma:
     g (d+1) = s d * g d 
   )|
 %
-\just\equiv{Igualdade extensional (73), Def-const (76), Definição de succ, Def-split (78), Definição de mul, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+\just\equiv{ \begin{tabular}
+                  \\ Igualdade extensional (73) , Def-const (76) , Def-succ , Def-split (78) , \\ Def-mul , |in = either (const 0) succ| , Eq-+ (27) , Fusão-+ (20)
+              \end{tabular}}
 %
   |g . in = either (const 1) (mul . (split g s))|
 %
-\just\equiv{Absorção-+ (22), Natural-id (1), |fF (split g s) = id + (split g s)|}
+\just\equiv{Absorção-+ (22) , Natural-id (1) , |fF (split g s) = id + (split g s)|}
 %
   |g . in = (either (const 1) mul) . fF (split g s)|
 \end{eqnarray*}
@@ -1502,7 +1579,9 @@ E obter |s|:
     s (d+1) = s d + 1 
   )|
 %
-\just\equiv{Igualdade extensional (73), Def-const (76), Def-comp (74), \newline Definição de succ, |in = either (const 0) succ|, Eq-+ (27), Fusão-+ (20) }
+\just\equiv{ \begin{tabular}
+                  \\Igualdade extensional (73) , Def-const (76) , Def-comp (74) , Def-succ , \\ |in = either (const 0) succ| , Eq-+ (27) , Fusão-+ (20)
+              \end{tabular}}
 %
   |s . in = either (const 1) (succ . s)|
 %
@@ -1547,7 +1626,7 @@ Neste momento, podemos aplicar a lei da recursividade múltipla em ambos os sist
   |split g s = cataNat ( split (either (const 1) mul) (either (const 1) (succ . p2)) )|
 \end{eqnarray*}
 
-Combinando os resultados  com a lei "Banana-Split" temos:
+Combinando os resultados com a lei "Banana-Split" temos:
 
 \begin{eqnarray*}
 \start
@@ -1592,10 +1671,10 @@ tipo |((Nat0, Nat0) , (Nat0, Nat0))|. Deste modo, surgem as seguintes implementa
 
 \begin{code}
 
-base k = (1, k+1, 1, 1)
+base k = (1, k + 1, 1, 1)
 loop = fromPairs . ( (split mul (succ . p2)) >< (split mul (succ . p2)) ) . toPairs
-       where toPairs (a,b,c,d) = ((a,b),(c,d))
-             fromPairs ((a,b),(c,d)) = (a,b,c,d)
+       where toPairs (a, b, c, d) = ((a, b), (c, d))
+             fromPairs ((a, b),(c, d)) = (a, b, c, d)
 
 \end{code}
 
@@ -1620,35 +1699,36 @@ inFTree = either Unit inComp
 
 \end{code}
 
-Dedução outFTree:
+Através do |in| e da equação |out . in = id| podemos deduzir o out da seguinte forma:
+
 \begin{eqnarray*}
 \start
   |outFTree . inFTree = id|
 %
-\just\equiv{inFTree; Reflexão-+}
+\just\equiv{inFTree , Reflexão-+}
 %
-  |outFTree . [inUnit, inComp] = [i1, i2]|
+  |outFTree . [Unit, inComp] = [i1, i2]|
 %
 \just\equiv{Fusão-+}
 %
-  |[outFTree . inUnit, outFTree . inComp] = [i1, i2]|
+  |[outFTree . Unit, outFTree . inComp] = [i1, i2]|
 %
 \just\equiv{Eq-+}
         |lcbr(
-    outFTree . inUnit = i1
+    outFTree . Unit = i1
   )(
     outFTree . inComp = i2
   )|
 %
-\just\equiv{Igualdade extensional; Def-comp}
+\just\equiv{Igualdade extensional , Def-comp}
 %
         |lcbr(
-    outFTree (inUnit b) = i1 b
+    outFTree (Unit b) = i1 b
   )(
     outFTree (inComp (a, (b, c))) = i2 (a, (b, c))
   )|
 %
-\just\equiv{inUnit; inComp}
+\just\equiv{ Def-inComp }
 %
         |lcbr(
     outFTree (Unit b) = i1 b
@@ -1658,18 +1738,75 @@ Dedução outFTree:
 \qed
 \end{eqnarray*}
 
-Com o |out| definido, foi-nos possível definir também os combinadores associados às \textit{FTrees}, assim como o seu 
-\textit{bifunctor}:
+
 \begin{code}
 
 outFTree (Unit b) = i1 (b)
 outFTree (Comp a b c) = i2 ((a, (b, c)))
 
+\end{code}
+
+Através do seguinte digrama podemos deduzir a função |baseFTree| e consequentemente a função |recFTree|:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |FTree A B|
+          \ar[d]^-{|baseFTree f g h|}
+          \ar[r]^-{|out|}
+&
+    |B + A >< (FTree A B >< FTree A B)|
+          \ar[d]^{|g + f >< (h >< h)|}
+\\
+    |FTree A B|
+&
+    |B + A >< (FTree A B >< FTree A B)|
+          \ar[l]_-{|in|}
+}
+\end{eqnarray*}
+
+\begin{code}
+
 baseFTree f g h = g -|- (f >< (h >< h))
 recFTree f = baseFTree id id f
+
+\end{code}
+
+\begin{code}
+
 cataFTree g = g . recFTree (cataFTree g) . outFTree
 anaFTree g = inFTree . recFTree (anaFTree g) . g
 hyloFTree h g = cataFTree h . anaFTree g
+
+\end{code}
+
+O bifunctor associado ao tipo FTree pode ser deduzido através do diagrama:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |FTree A B|
+           \ar[d]_-{|bimap f g|}
+&
+    |B + A >< (FTree A B >< FTree A B)|
+          \ar[d]^-{|id + id >< (bimap f g >< bimap f g)|}
+          \ar[l]_-{|in|}
+\\
+    |FTree C D|
+&
+    |B + A >< (FTree C D >< FTree C D)|
+          \ar[d]^-{|g + f >< id|}
+          \ar[l]
+\\
+&
+    |D + C >< (FTree C D >< FTree C D)|
+          \ar[ul]^-{|in|}
+}
+\end{eqnarray*}
+
+
+%format (cataFTree (g)) = "\cata{" g "}"
+%format (anaFTree (g)) = "\ana{" g "}"
+
+\begin{code}
 
 instance Bifunctor FTree where
     bimap f g = cataFTree (inFTree . (g -|- (f >< id)))
@@ -1678,13 +1815,78 @@ instance Bifunctor FTree where
 
 Para resolvermos a primeira alínea deste problema, começamos por definir as seguintes funções auxiliares:
 
-\begin{code}    
+\begin{code}   
+
+ratio :: Float
+ratio = (2/sqrt(2))
+
 lastSquare :: () -> Square
 lastSquare _ = 1
 
+\end{code}
+
+O objetivo desta última função é dar o tamanho ao último quadrado. O grupo pensou em gerar um número pseudoaleatório para que sempre que a função |generatePTree| fosse
+chamada, a árvore criada tivesse dimensões diferentes. Mas visto que o objetivo da mesma função é apenas gerar uma PTree, decidimos que o último quadrado teria sempre aresta 1.
+
+Como última função auxiliar e partindo inicialmente da seguinte versão pointwise,
+
+\begin{eqnarray*}
+\start
+  |lcbr(
+    nextSquare 0 = ratio * lastSquare(())
+  )(
+    nextSquare n = ratio * nextSquare(n-1)
+  )|
+\end{eqnarray*}
+
+através dos conhecimentos de Cálculo de Programas, chegamos a uma versão pointfree da mesma função, justificada em seguida:
+
+\begin{eqnarray*}
+\start
+  |lcbr(
+    nextSquare 0 = ratio * lastSquare(())
+  )(
+    nextSquare (n+1) = ratio * nextSquare(n)
+  )|
+%
+\just\equiv{Def-const , Def-succ , Def-(!) . Def-comp}
+%
+  |lcbr(
+    nextSquare (const 0) n = (ratio*) . lastSquare . (!) . n
+  )(
+    nextSquare succ n = (ratio*) . nextSquare . n
+  )|
+%
+\just\equiv{ Igualdade extensional }
+%
+  |lcbr(
+    nextSquare (const 0) = (ratio*) . lastSquare . (!)
+  )(
+    nextSquare succ = (ratio*) . nextSquare
+  )|
+%
+\just\equiv{ Eq-+ }
+%
+    |either (nextSquare . (const 0)) (nextSquare . succ) = either ((ratio*) . lastSquare . (!)) ((ratio*) . nextSquare)|
+%
+\just\equiv{ Fusão-+ }
+%
+    |nextSquare . either ((const 0) succ) = either ((ratio*) . lastSquare . (!)) ((ratio*) . nextSquare)|
+%
+\just\equiv{ inNat }
+%
+    |nextSquare . in = either ((ratio*) . lastSquare . (!)) ((ratio*) . nextSquare)|
+%
+\just\equiv{ in . out = id }
+%
+    |nextSquare = either ((ratio*) . lastSquare . (!)) ((ratio*) . nextSquare) . out|
+\qed
+\end{eqnarray*}
+
+\begin{code}
+
 nextSquare :: Int -> Square
-nextSquare 0 = lastSquare(()) * (2/sqrt(2))
-nextSquare x = (2/sqrt(2)) * (nextSquare(x-1))
+nextSquare = (either ((ratio*) . lastSquare . (!)) ((ratio*) . nextSquare)) . outNat
 
 \end{code}
 
@@ -1693,8 +1895,9 @@ Com estas funções, foi-nos possível desenhar o diagrama que nos permitiu dedu
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Nat0|
-           \ar[d]_-{|generatePTree|}^-{|anaNat g|}
+           \ar[d]_-{|generatePTree|}^-{|anaFTree g|}
            \ar[r]_-{|outNat|}
+           \ar@@/^1.0pc/[rr]^-{|g|}
 &
     |1 + Nat0|
           \ar[r]_-{|lastSquare + split (nextSquare) (split id id)|}
@@ -1781,18 +1984,18 @@ O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da |s
 \start
   |singletonbag a = B[(a,1)]|
 %
-\just\equiv{def-comp, def-cons, def-nil}
+\just\equiv{ Def-comp , Def-cons , Def-nil }
 %
   |singletonbag a = B . cons . ((a,1),nil)|
 %
-\just\equiv{def-split, def-one, def-fromIntegral: a função one devolve um Integer e o Bag utiliza Int}
+\just\equiv{Def-split, Def-one, Def-fromIntegral: a função one devolve um Integer e o Bag utiliza Int}
 %
   |singletonbag a = B . cons . split (id,fromIntegral . one) nil a|
 %
-\just\equiv{def-split}
+\just\equiv{ Def-split }
   |singletonbag a = B . cons . split (split id (fromIntegral . one)) nil a|
 %
-\just\equiv{Igualdade extensional}
+\just\equiv{ Igualdade extensional }
 %
   |singletonbag = B . cons . split (split id (fromIntegral . one)) nil|
 \qed
@@ -1803,12 +2006,12 @@ Para determinar o |muB| partimos do diagrama:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag A)|
-    \ar[r]^-{|muB|}
+        \ar[r]^-{|muB|}
 &
     |Bag A|
 &
     |A|
-    \ar[l]_-{|u|}
+        \ar[l]_-{|u|}
 }
 \end{eqnarray*}
 
@@ -1816,12 +2019,14 @@ A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Ba
 para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior 
 pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os 
 elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função 
-auxiliar |parMult|, de tipo |([(a,Int)],Int) -> [(a,Int)]|, para podermos realizar esta multiplicação.
+auxiliar |parMult| para podermos realizar esta multiplicação.
 
 \begin{code}
+
 parMult :: ([(a,Int)],Int) -> [(a,Int)]
 parMult ([], _) = []
 parMult ((a, b):t, x) = [(a, b*x)] ++ parMult(t, x)
+
 \end{code}
 
 Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:
@@ -1829,20 +2034,20 @@ Pensando desta forma, chegamos à definição de |muB| através do seguinte diag
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag a)|
-    \ar[d]^-{|unB|}
-    \ar@@/_5.0pc/[ddddd]_-{|muB|}
+        \ar[d]^-{|unB|}
+        \ar@@/_5.0pc/[ddddd]_-{|muB|}
 \\
-    |[(Bag a, Int)]|
-    \ar[d]^-{|map (split (unB . p1) p2)|}	
+    |(Bag a, Int)|^*
+        \ar[d]^-{|map (split (unB . p1) p2)|}	
 \\
-    |[([(a,Int)],Int)]|
-    \ar[d]^-{|map parMult|}
+    |((a,Int)|^*|,Int)|^*
+        \ar[d]^-{|map parMult|}
 \\
-    |[[(a,Int)]]|
-    \ar[d]^-{|concat|}
+    |((a,Int)|^*|)|^*
+        \ar[d]^-{|concat|}
 \\
-    |[(a,Int)]|
-    \ar[d]^-{|B|}
+    |(a,Int)|^*
+        \ar[d]^-{|B|}
 \\
     |Bag a|
 }
@@ -1855,27 +2060,27 @@ respetivamente, com os diagramas que se seguem.
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag a)|
-    \ar[d]_-{|muB|}
+        \ar[d]_-{|muB|}
 &
     |Bag(Bag(Bag a))|
-    \ar[l]_-{|muB|}
-    \ar[d]^-{|fmap muB|}
+        \ar[l]_-{|muB|}
+        \ar[d]^-{|fmap muB|}
 \\
     |Bag a|
 &
     |Bag (Bag a)|
-    \ar[l]^-{|muB|}
+        \ar[l]^-{|muB|}
 }
 \end{eqnarray*}
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag a)|
-    \ar[d]_-{|muB|}
+        \ar[d]_-{|muB|}
 &
     |Bag a|
-    \ar[l]_-{|return|}
-    \ar[dl]^-{|id|}
+        \ar[l]_-{|return|}
+        \ar[dl]^-{|id|}
 \\
     |Bag a|
 }
@@ -1890,16 +2095,16 @@ predefinida |fromIntegral|. Assim, com o seguinte diagrama, chegamos à função
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag a|
-    \ar[d]_-{|dist|}
-    \ar[r]^-{|unB|}
+        \ar[d]_-{|dist|}
+        \ar[r]^-{|unB|}
 &
     |[(a,Int)]|
-    \ar[d]^-{|map(id >< fromIntegral)|}
+        \ar[d]^-{|map(id >< fromIntegral)|}
 \\
     |Dist a|
 &
     |[(a,Float)]|
-    \ar[l]_-{|scale|}
+        \ar[l]_-{|scale|}
 }
 \end{eqnarray*}
 
@@ -1912,34 +2117,6 @@ muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
 dist = Probability.scale . map(id >< fromIntegral) . unB
 
 \end{code}
-
-
-\section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
-Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tirados de \cite{Ol18}.} 
-\begin{eqnarray*}
-\start
-	|id = split f g|
-%
-\just\equiv{ universal property }
-%
-        |lcbr(
-		p1 . id = f
-	)(
-		p2 . id = g
-	)|
-%
-\just\equiv{ identity }
-%
-        |lcbr(
-		p1 = f
-	)(
-		p2 = g
-	)|
-\qed
-\end{eqnarray*}
-
-Os diagramas podem ser produzidos recorrendo à \emph{package} \LaTeX\ 
-\href{https://ctan.org/pkg/xymatrix}{xymatrix}, por exemplo: 
 
 
 
