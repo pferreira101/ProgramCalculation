@@ -1713,8 +1713,10 @@ drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
 
 \subsection*{Problema 5}
 
-Como o \texttt{u} é a função \texttt{singleton}, temos que: |singletonbag :: a -> Bag a|. Esta função teria que, dado um qualquer elemento de um qualquer tipo de dados, transformar esse elemento num \textit{Bag}, assumindo as ocorrências desse elemento como 1.
+Como o \texttt{u} é a função \texttt{singleton}, temos que: |singletonbag :: a -> Bag a|. Esta função teria que, dado um qualquer 
+elemento de um qualquer tipo de dados, transformar esse elemento num \textit{Bag}, assumindo as ocorrências desse elemento como 1.
 O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da \texttt{singletonbag}:
+
 \begin{eqnarray*}
 \start
   |singletonbag a = B[(a,1)]|
@@ -1737,6 +1739,7 @@ O diagrama seguinte mostra como chegamos à definição \textit{pointfree} da \t
 \end{eqnarray*}
 
 Para determinar o |muB| partimos do diagrama:
+
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag A)|
@@ -1748,46 +1751,108 @@ Para determinar o |muB| partimos do diagrama:
     \ar[l]_-{|u|}
 }
 \end{eqnarray*}
-A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Bag a)}, ou seja, tendo \texttt{B[(B[(a,Int)],Int)]}, para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função auxiliar \texttt{parMult} de tipo |parMult :: ([(a,Int)],Int) -> [(a,Int)]| para podermos realizar esta multiplicação.
+
+A maneira como interpretamos o enunciado foi a seguinte: tendo um \texttt{Bag(Bag a)}, ou seja, tendo \texttt{B[(B[(a,Int)],Int)]}, 
+para transformar isto simplesmente num \texttt{Bag a} temos que multiplicar o segundo elemento dos pares do \textit{Bag} interior 
+pelo segundo elemento do \textit{Bag} exterior. Isto porque, ao termos \textit{n} \textit{Bags} dentro de um \textit{Bag}, os 
+elementos do interior aparecem \textit{n} mais vezes, dado o \textit{Bag} exterior. Tivemos, portanto, que definir uma função 
+auxiliar \texttt{parMult} de tipo |parMult :: ([(a,Int)],Int) -> [(a,Int)]| para podermos realizar esta multiplicação.
 
 \begin{code}
-
 parMult :: ([(a,Int)],Int) -> [(a,Int)]
-parMult (_, 0) = []
 parMult ([], _) = []
 parMult ((a, b):t, x) = [(a, b*x)] ++ parMult(t, x)
-
 \end{code}
 
-Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:\begin{eqnarray*}
+Pensando desta forma, chegamos à definição de |muB| através do seguinte diagrama:
+
+\begin{eqnarray*}
 \xymatrix@@C=2cm{
     |Bag(Bag a)|
     \ar[d]^-{|unB|}
     \ar@@/_5.0pc/[ddddd]_-{|muB|}
 \\
-    |(Bag a, Int)*|
+    |[(Bag a, Int)]|
     \ar[d]^-{|map (split (unB . p1) p2)|}	
 \\
-    |((a,Int)*,Int)*|
+    |[([(a,Int)],Int)]|
     \ar[d]^-{|map parMult|}
 \\
-    |((a,Int)*)*|
+    |[[(a,Int)]]|
     \ar[d]^-{|concat|}
 \\
-    |(a,Int)*|
+    |[(a,Int)]|
     \ar[d]^-{|B|}
 \\
     |Bag a|
 }
 \end{eqnarray*}
 
+Desta maneira, podemos demonstrar as definições de |muB| e de |singletonbag| através das propriedades da multiplicação e da unidade 
+dos Monads, representadas nos testes unitários \textit{test5a} e \textit{test5b} do enunciado, as quais podemos exprimir, 
+respetivamente, com os diagramas que se seguem.
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag a)|
+    \ar[d]_-{|muB|}
+&
+    |Bag(Bag(Bag a))|
+    \ar[l]_-{|muB|}
+    \ar[d]^-{|fmap muB|}
+\\
+    |Bag a|
+&
+    |Bag (Bag a)|
+    \ar[l]^-{|muB|}
+}
+\end{eqnarray*}
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag(Bag a)|
+    \ar[d]_-{|muB|}
+&
+    |Bag a|
+    \ar[l]_-{|return|}
+    \ar[dl]^-{|id|}
+\\
+    |Bag a|
+}
+\end{eqnarray*}
+
+O último requisito (não explicitado no enunciado) era definir a função \texttt{dist}, que exprime a distribuição dos elementos de um 
+\textit{Bag}, utilizando o módulo \texttt{Probability}. Ora, para tal, utilizamos a função \texttt{scale} do módulo referido, cujo 
+tipo é |scale :: [(a,Float)] -> Dist a|. Sendo isto exatamente o que nós queríamos, apenas tivemos que converter o segundo elemento 
+(\textit{Int}) dos pares da lista (após o \texttt{unB} de um \textit{Bag}) em \textit{Float} e, para isso, usamos a função 
+predefinida \texttt{fromIntegral}. Assim, com o seguinte diagrama, chegamos à função \texttt{dist}:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Bag a|
+    \ar[d]_-{|dist|}
+    \ar[r]^-{|unB|}
+&
+    |[(a,Int)]|
+    \ar[d]^-{|map(id >< fromIntegral)|}
+\\
+    |Dist a|
+&
+    |[(a,Float)]|
+    \ar[l]_-{|scale|}
+}
+\end{eqnarray*}
+
+Em suma, definimos as funções, tendo em atenção as justificações apresentadas anteriormente, deste modo:
+
 \begin{code}
 
 singletonbag = B . cons . ( split (split id (fromIntegral . one)) nil)
 muB = B . concat . map parMult . map (split (unB .p1) p2) . unB
-dist = undefined
+dist = Probability.scale . map(id >< fromIntegral) . unB
 
 \end{code}
+
 
 \section{Como exprimir cálculos e diagramas em LaTeX/lhs2tex}
 Estudar o texto fonte deste trabalho para obter o efeito:\footnote{Exemplos tirados de \cite{Ol18}.} 
