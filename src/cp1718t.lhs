@@ -979,7 +979,7 @@ inBlockchain = either Bc Bcs
 
 \end{code}
 
-Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, através da seguinte dedução:
+Com o |in|, para chegarmos ao respetivo \texttt{out}, resolvemos em ordem a |outBlockchain| a seguinte equação:
 \begin{eqnarray*}
 \start
   |outBlockchain . inBlockchain = id|
@@ -1006,8 +1006,9 @@ Com o |in|, foi-nos relativamente simples chegar ao respetivo \texttt{out}, atra
   )(
     outBlockchain (Bcs bs) = i2 bs
   )|
-\qed
 \end{eqnarray*}
+
+Assim, temos:
 
 \begin{code}
 
@@ -1016,15 +1017,17 @@ outBlockchain (Bcs bs) = i2 bs
 
 \end{code}
 
-A partir daqui, com os conhecimentos que possuímos acerca dos combinadores de funções, pudemos definir o \textit{functor}, os 
-catamorfismos, os anamorfismos e os hilomorfismos associados ao tipo \textit{Blockchain}.
+A partir daqui, com os conhecimentos que possuímos acerca dos combinadores de funções, pudemos definir as restantes funções associadas ao tipo \textit{Blockchain}.
 
 
 \begin{code}
 
 recBlockchain f = id -|- id >< f
+
 cataBlockchain g = g . recBlockchain (cataBlockchain g) . outBlockchain
+
 anaBlockchain g = inBlockchain . recBlockchain (anaBlockchain g) . g
+
 hyloBlockchain h g = cataBlockchain h . anaBlockchain g
 
 \end{code}
@@ -1103,6 +1106,8 @@ subTo (o, (v, d)) ((e, val):t) = if (o == e) then (e, val - v):t
           \ar[l]^-{|either nil sumsub|}
 }
 \end{eqnarray*}
+ 
+ Pelo diagrama podemos definir a função |ledger| como:
 
 \begin{code}
 
@@ -1112,13 +1117,17 @@ ledger = cataList (either nil sumsub) . allTransactions
 \end{code}
 
 Por último, para a terceira parte do problema (definir a função |isValidMagicNr|), desenhámos o diagrama e desenvolvemos as 
-funções |allUnique| e |allMagicNr|, sendo que esta última foi escrita como um catamorfismo.
+funções |allUnique| e |allMagicNr|, sendo que esta última foi escrita como um catamorfismo, segundo o diagrama que de seguida se apresenta.
 \begin{code}
 
 allUnique :: Eq a => [a] -> Bool
 allUnique [] = True
 allUnique (h:t) = if elem h t then False
                               else allUnique t
+
+\end{code}
+
+\begin{code}
 
 allMagicNr :: Blockchain -> [MagicNo]
 allMagicNr = cataBlockchain (either (singl . p1) (cons . (p1 >< id)))
@@ -1182,10 +1191,12 @@ inQTree = either uncurryCell uncurryBlock
 
 \end{code}
 
-A seguinte versão |inQTree = either ((uncurry (uncurry Cell)) . assocl)  (uncurry  (uncurry (uncurry Block)) . (split (split (id >< p1) (p1 . p2 . p2)) (p2 . p2 . p2)))| também é válida, porém é demasiado extensa e a sua compreensão não é fácil, assim como a elevada dificuldade no seu manuseamento no cálculo a seguir apresentado, pelo que o grupo optou pela versão anterior, apesar de ser pointwise.
+A seguinte versão |inQTree = either ((uncurry (uncurry Cell)) . assocl)  (uncurry  (uncurry (uncurry Block)) . (split (split (id >< p1) (p1 . p2 . p2)) (p2 . p2 . p2)))| também é válida, porém é demasiado extensa e a sua compreensão não é fácil, pelo que o grupo optou pela versão anterior, apesar de ser pointwise.
 
 
 Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |out . in = id|:
+
+
 \begin{eqnarray*}
 \start
   |outQTree . inQTree = id|
@@ -1220,9 +1231,9 @@ Com a definição do |in|, pudemos deduzir o |out|, recorrendo à propriedade |o
   )(
     outQTree (Block a b c d) = i2 (a, (b, (c, d)))
   )|
-\qed
 \end{eqnarray*}
 
+Assim sendo, temos:
 
 \begin{code}
 
@@ -1379,6 +1390,7 @@ invertColor (PixelRGBA8 r g b a) = PixelRGBA8 (255-r) (255-g) (255-b) a
 
 Do mesmo modo que deduzimos as anteriores, deduzimos também esta:
 
+
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
     |QTree PixelRGBA8|
@@ -1400,6 +1412,8 @@ Do mesmo modo que deduzimos as anteriores, deduzimos também esta:
 }
 \end{eqnarray*}
 
+Do diagrama temos que:
+
 \begin{code}
 
 invertQTree = fmap invertColor
@@ -1407,22 +1421,69 @@ invertQTree = fmap invertColor
 \end{code}
 
 A segunda alínea deste problema pedia-nos que definissemos uma função |compressQTree|, que comprime uma \textit{QTree}.
-Definimo-la, então, como um anamorfismo, ao qual chegamos a partir de funções auxiliares (|typeQTree| e |chopQTree|).
+Para produzir o efeito necessário, recorremos ao anamorfismo |compressAna :: (QTree a, Int) -> QTree a| cujo segundo elemento do par que recebe como argumento representa a profundidade máxima que uma árvore pode ter. Inicialmente esse valor corresponde a n-k, em que n representa a profundidade da árvore que desejamos comprimir, e k o grau de compressão. Assim temos:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |QTree A|
+        \ar[d]^-{|split (id) ((subtract x) . depthQTree|}
+        \ar@@/_3.5pc/[dd]_-{|compressQTree x|}
+\\
+    |(QTree A, Int)|
+        \ar[d]^-{|compressAna|} 
+\\
+    |QTree A|
+}
+\end{eqnarray*}
+
+Analisando o diagrama que se apresenta de seguida, podemos observar o gene do anamorfismo anteriormente referido. A compressão propriemente dita acontece dentro da função |checkDepth| onde é testado o valor máximo que a árvore pode ter após a compressão. Caso seja necessário transformar um |Block| num |Cell| é usada a função |blockToCell|. Caso contrário, a cada uma das sub-àrvores do |Block| é atribuida uma profundidade máxima decrementada em uma unidade. O valor a ser colocado na primeira componente do |Cell| aquando da chamada da função |blockToCell| é calculdado pela função |typeQTree|, garantindo assim que a função |compressQTree| é polimórfica em \texttt{a}.
+
+\begin{eqnarray*}
+\xymatrix@@C=1cm{
+    |(QTree A, Int)|
+        \ar[rr]^-{|distl . (outQTree >< id)|}
+        \ar[d]^-{|compressAna|}
+&
+&
+    |((A >< (Int >< Int)) >< Int) + ((QTree A)|^4| >< Int)|
+        \ar[d]^-{|either (i1 . p1) (checkDepth)|}
+\\
+    |QTree A|
+&
+    |A >< (Int >< Int) + (QTree A)|^4
+        \ar[l]^-{|in|}
+&
+    |A >< (Int >< Int) + (QTree A >< Int)|^4
+        \ar[l]^-{|recQTree (compressAna)|}
+}
+\end{eqnarray*}
+As seguintes funções auxiliares foram então definidas:
+
 \begin{code}
 
 typeQTree :: QTree a -> a
 typeQTree (Cell a b c) = a
 typeQTree (Block a b c d) = typeQTree a
 
-chopQTree :: QTree a -> QTree a
-chopQTree (Cell a b c) = Cell a b c
-chopQTree (Block a b c d) =  uncurryCell (typeQTree a, (sizeQTree((Block a b c d))))
+blockToCell :: (QTree a, (QTree a, (QTree a, QTree a))) -> (a, (Int, Int))
+blockToCell = compressBlock . uncurryBlock 
+            where compressBlock (Block a b c d) =  (typeQTree a, (sizeQTree((Block a b c d))))
 
-teste = cond ((1==) . p2) (chopQTree . p1) (id . p1)
 
--- Fazer diagrama aqui, Pedro manda-me foto q eu construo se quiseres
+checkDepth = cond ((0 >= ) . p2) (i1 . blockToCell . p1) (i2 . aux)
+        where aux ((a,(b,(c,d))), p) = ((a,p-1),((b,p-1),((c,p-1),(d,p-1))))  
 
-compressQTree x = anaQTree ((recQTree (teste . (split (id) ((x-) . depthQTree)))) . outQTree)
+compressAna :: (QTree a, Int) -> QTree a
+compressAna = anaQTree ( ( either (i1 . p1) checkDepth ) . distl . (outQTree >< id) )
+
+\end{code}
+
+Podemos então escrever a seguinte declaração da função pedida nesta alínea:
+
+\begin{code}
+
+compressQTree x = compressAna . (split id ((subtract x) . depthQTree) )
+
 
 \end{code}
 
@@ -1735,7 +1796,6 @@ Através do |in| e da equação |out . in = id| podemos deduzir o out da seguint
   )(
     outFTree (Comp a b c) = i2 (a, (b, c))
   )|
-\qed
 \end{eqnarray*}
 
 
@@ -1921,44 +1981,10 @@ generatePTree = anaFTree ((lastSquare -|- (split (nextSquare) (split id id))) . 
 
 \end{code}
 
-???????????????????????????????????????????
-
-???????????????????????????????????????????
-
-EXPLICAR A DRAWPTREE OU ENTÃO O QUE FALHOU
-
-???????????????????????????????????????????
-
-???????????????????????????????????????????
-
 
 \begin{code}
 
-mkBranches :: [(Float,Float)] -> ([(Float,Float)],[(Float,Float)])
-mkBranches [a, b, c, d] = let d  = 0.5 <*> (b <+> ( (-1) <*> a))
-                              l1 = d <+> orth d
-                              l2 = orth l1
-                          in
-                            ( [a <+> l2, b <+> (2 <*> l2), a <+> l1, a]
-                            , [a <+> (2 <*> l1), b <+> l1, b, b <+> l2] )
-                          where
-                            (a, b) <+> (c, d) = (a+c, b+d)
-                            n <*> (a, b) = (a*n, b*n)
-                            orth (a, b) = (-b, a)
-
-genSquare :: [(Float,Float)] -> Int -> [[(Float,Float)]]
-genSquare s 0 = []
-genSquare s (n) = let (s1,s2) = mkBranches s
-                  in s1 : s2 : ( (genSquare s1 (n-1)) ++ (genSquare s2 (n-1)) )
-
-\end{code}
-
-Assim, podemos então definir a |drawPTree| da seguinte maneira:
-
-\begin{code}
-
-drawPTree (Comp a b c) = let s1 = [(-a/2, a/2),(a/2,a/2),(a/2,-a/2),(-a/2,-a/2)]
-                         in map polygon (s1 : (genSquare (s1) (depthFTree (Comp a b c))))
+drawPTree = undefined
 
 \end{code}
 
